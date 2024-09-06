@@ -1,0 +1,7 @@
+Add documentation to lang_caputf describing why it's not really a utf capture.
+
+More testing for lang.h
+
+Implement scan
+
+Valgrind test for executables
