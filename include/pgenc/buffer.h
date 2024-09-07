@@ -160,6 +160,20 @@ enum pgc_err pgc_buf_matchutf8(
         void *state);
 
 /**
+ * Scan the buffer for the sequence of bytes.  The buffer's offset will be 
+ * set to the beginning of the matching byte sequence if found.
+ * @param buffer The buffer to scan.
+ * @param bytes The bytes to scan for.
+ * @param nbytes The number of bytes to scan for.
+ * @return 
+ *      PGC_ERR_OK      - Sequence found
+ */
+enum pgc_err pgc_buf_scan(
+        struct pgc_buf *buffer,
+        void *bytes,
+        const size_t nbytes);
+
+/**
  * Read up to nbytes bytes from a file descriptor and append them to the 
  * end of the buffer.
  * @param buffer The buffer.

@@ -216,6 +216,28 @@ enum pgc_err pgc_buf_matchutf8(
         return PGC_ABORT();
 }
 
+enum pgc_err pgc_buf_scan(
+        struct pgc_buf *buf,
+        void *bytes,
+        const size_t nbytes)
+{
+        for(;;) {
+                size_t beg = pgc_buf_tell(buf);
+                enum pgc_err err = pgc_buf_cmp(buf, bytes, nbytes);
+                switch(err) {
+                        case PGC_ERR_OK:
+                                PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg));
+                                return PGC_ERR_OK;
+                        case PGC_ERR_CMP: 
+                                PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg + 1));
+                                break;
+                        default: 
+                                PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg));
+                                return err;
+                }
+        }
+}
+
 enum pgc_err pgc_buf_read(
         struct pgc_buf *b, 
         int fd, 

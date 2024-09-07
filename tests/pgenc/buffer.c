@@ -143,6 +143,31 @@ void test_match_utf8()
         
 }
 
+void test_scan()
+{
+        puts("   ...test_scan()");
+
+        struct pgc_buf buf;
+        pgc_buf_init(&buf, "abcdefg", 7, 7);
+
+        enum pgc_err err = pgc_buf_scan(&buf, "de", 2);
+        PGC_TEST(err == PGC_ERR_OK);
+        PGC_TEST(pgc_buf_tell(&buf) == 3);
+
+        struct pgc_buf lens;
+        PGC_TEST(pgc_buf_seek(&buf, 0) == PGC_ERR_OK);
+        pgc_buf_lens(&lens, &buf, 4);
+
+        err = pgc_buf_scan(&lens, "de", 2);
+        PGC_TEST(err == PGC_ERR_OOB);
+        PGC_TEST(pgc_buf_tell(&lens) == 3);
+
+        pgc_buf_lens(&lens, &buf, 5);
+        err = pgc_buf_scan(&lens, "cde", 3);
+        PGC_TEST(err == PGC_ERR_OK);
+        PGC_TEST(pgc_buf_tell(&lens) == 2);
+}
+
 void test_read()
 {
         puts("   ...test_read()");
@@ -404,6 +429,7 @@ int main(int argc, char **args)
         test_cmp();
         test_match();
         test_match_utf8();
+        test_scan();
         test_read();
         test_write();
         test_printf();
