@@ -424,6 +424,14 @@ enum pgc_err pgc_lang_setcall(struct pgc_buf *buffer, void *state)
         return PGC_ERR_OK;
 }
 
+enum pgc_err pgc_lang_caprep(
+        struct pgc_buf *buffer,
+        void *state,
+        struct pgc_par *arg)
+{
+        return pgc_lang_readexp(buffer, state, arg, PGC_SYN_REP, 0);
+}
+
 enum pgc_err pgc_lang_caphook(
         struct pgc_buf *buffer,
         void *state,

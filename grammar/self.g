@@ -55,7 +55,7 @@ let paren = '(' exp ')';
 
 let term = pctbyte | charlit | paren | id; 
 
-let rep = range term @pgc_lang_setrep; 
+let rep = pgc_lang_caprep $ range term;
 
 let hook = '@' pgc_lang_caphook $ idpat; 
 
