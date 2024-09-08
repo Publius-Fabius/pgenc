@@ -226,7 +226,6 @@ enum pgc_err pgc_buf_scan(
                 enum pgc_err err = pgc_buf_cmp(buf, bytes, nbytes);
                 switch(err) {
                         case PGC_ERR_OK:
-                                PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg));
                                 return PGC_ERR_OK;
                         case PGC_ERR_CMP: 
                                 PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg + 1));

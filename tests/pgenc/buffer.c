@@ -152,7 +152,7 @@ void test_scan()
 
         enum pgc_err err = pgc_buf_scan(&buf, "de", 2);
         PGC_TEST(err == PGC_ERR_OK);
-        PGC_TEST(pgc_buf_tell(&buf) == 3);
+        PGC_TEST(pgc_buf_tell(&buf) == 5);
 
         struct pgc_buf lens;
         PGC_TEST(pgc_buf_seek(&buf, 0) == PGC_ERR_OK);
@@ -165,7 +165,7 @@ void test_scan()
         pgc_buf_lens(&lens, &buf, 5);
         err = pgc_buf_scan(&lens, "cde", 3);
         PGC_TEST(err == PGC_ERR_OK);
-        PGC_TEST(pgc_buf_tell(&lens) == 2);
+        PGC_TEST(pgc_buf_tell(&lens) == 5);
 }
 
 void test_read()
