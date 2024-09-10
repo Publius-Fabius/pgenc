@@ -201,7 +201,7 @@ void pgc_syn_free(struct pgc_ast *ast);
  * @param syn The syntax node.
  * @return The node's type.
  */
-enum pgc_syn_tag pgc_syn_typeof(struct pgc_ast *syn);
+int pgc_syn_typeof(struct pgc_ast *syn);
 
 /**
  * Get the first argument.

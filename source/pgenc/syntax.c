@@ -184,7 +184,7 @@ void pgc_syn_free(struct pgc_ast *ast)
         }  
 }
 
-enum pgc_syn_tag pgc_syn_typeof(struct pgc_ast *syn)
+int pgc_syn_typeof(struct pgc_ast *syn)
 {
         return syn->utag;
 }
