@@ -223,6 +223,12 @@ enum pgc_err pgc_lang_setor(struct pgc_buf *buffer, void *state);
  */
 enum pgc_err pgc_lang_setcall(struct pgc_buf *buffer, void *state);
 
+/** Capture repitition */
+enum pgc_err pgc_lang_caprep(
+        struct pgc_buf *buffer,
+        void *state,
+        struct pgc_par *arg);
+        
 /**
  * Capture hook.
  */
