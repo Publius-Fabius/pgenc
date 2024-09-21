@@ -6,13 +6,15 @@ enum pgc_err
 {
         PGC_ERR_OK      = 0,            /** No error. */
         PGC_ERR_SYS     = -1,           /** System error (check errno). */
-        PGC_ERR_OOB     = -2,           /** Buffer index went out of bounds. */
-        PGC_ERR_CMP     = -3,           /** Comparison operation failed. */
-        PGC_ERR_ENC     = -4,           /** Encoding error. */
-        PGC_ERR_EOF     = -5,           /** End of file was encountered. */
-        PGC_ERR_SYN     = -6,           /** Syntax error. */
-        PGC_ERR_FLO     = -7,           /** Numeric overflow error. */
-        PGC_ERR_OOM     = -8            /** Allocator ran out of memory. */
+
+        PGC_ERR_OOB     = -1600,        /** Out of Bounds */
+        PGC_ERR_CMP     = -1601,        /** Comparison Failed */
+        PGC_ERR_ENC     = -1602,        /** Encoding Error */
+        PGC_ERR_EOF     = -1603,        /** End of File Encountered */
+        PGC_ERR_SYN     = -1604,        /** Syntax Error */
+        PGC_ERR_FLO     = -1605,        /** Numeric Overflow */
+        PGC_ERR_OOM     = -1606,        /** Out of Memory */
+        PGC_ERR_SSL     = -1607         /** SSL Error */
 };
 
 /**

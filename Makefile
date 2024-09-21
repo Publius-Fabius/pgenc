@@ -20,7 +20,7 @@ build/pgenc/buffer.o : source/pgenc/buffer.c include/pgenc/buffer.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_buffer : tests/pgenc/buffer.c build/pgenc/buffer.o \
 	build/pgenc/error.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 grind_test_buffer : bin/test_buffer
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
@@ -31,7 +31,7 @@ bin/test_parser : tests/pgenc/parser.c build/pgenc/parser.o \
 	build/pgenc/error.o \
 	build/pgenc/charset.o \
 	build/pgenc/buffer.o
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 grind_test_parser : bin/test_parser
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
@@ -95,7 +95,7 @@ bin/test_lang : tests/pgenc/lang.c \
 	build/pgenc/ast.o \
 	build/pgenc/syntax.o \
 	build/pgenc/table.o 
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 grind_test_lang : bin/test_lang
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
@@ -115,7 +115,7 @@ lib/libpgenc.a : \
 
 # dummy build
 bin/pgenc_dummy : source/pgenc/main.c source/pgenc/dummy.c lib/libpgenc.a
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 
 # self_proto.c
 tmp/pgenc/self_proto.c : bin/pgenc_dummy 
@@ -123,29 +123,29 @@ tmp/pgenc/self_proto.c : bin/pgenc_dummy
 build/pgenc/self_proto.o : tmp/pgenc/self_proto.c include/pgenc/self.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_self_proto : tests/pgenc/self_proto.c build/pgenc/self_proto.o lib/libpgenc.a
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 grind_test_self_proto : bin/test_self_proto
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # self.c
 bin/pgenc_proto : source/pgenc/main.c tmp/pgenc/self_proto.c lib/libpgenc.a
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 tmp/pgenc/self.c : bin/pgenc_proto grammar/self.g
 	bin/pgenc_proto -g grammar/self.g -s $@ -d pgc_self
 build/pgenc/self.o : tmp/pgenc/self.c include/pgenc/self.h
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_self : tests/pgenc/self.c build/pgenc/self.o lib/libpgenc.a
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 grind_test_self: bin/test_self
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # executable
 bin/pgenc : source/pgenc/main.c tmp/pgenc/self.c lib/libpgenc.a
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 tmp/pgenc/self_exec.c : bin/pgenc grammar/self.g
 	bin/pgenc -g grammar/self.g -s $@ -d pgc_self
 bin/test_exec : tests/pgenc/self.c tmp/pgenc/self_exec.c lib/libpgenc.a
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
 grind_test_exec: bin/test_exec
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 

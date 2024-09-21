@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <openssl/ssl.h>
 
 /** 
  * I/O Buffer
@@ -180,15 +181,31 @@ enum pgc_err pgc_buf_scan(
  * @param fd The file descriptor to read bytes from.
  * @param nbytes The maximum number of bytes to read.
  * @return
- *      PGC_ERR_OK      - All ok.
- *      PGC_ERR_OOB     - Attempt to write past storable memory.
- *      PGC_ERR_EOF     - The EOF was encountered.
- *      PGC_ERR_SYS     - System error (check errno).
+ * PGC_ERR_OK - All ok.
+ * PGC_ERR_OOB - Attempt to write past buffer.
+ * PGC_ERR_EOF - The EOF was encountered.
+ * PGC_ERR_SYS - System Error
+ * PGC_ERR_WNT - Wants more time.
  */
 enum pgc_err pgc_buf_read(
         struct pgc_buf *buffer, 
         int fd, 
         const size_t nbytes);
+
+/**
+ * Read up to nbytes bytes from a secure connection and append them to the 
+ * end of the buffer.
+ * @return
+ * PGC_ERR_OK - All OK.
+ * PGC_ERR_OOB - Attempt to write past buffer.
+ * PGC_ERR_EOF - The EOF was encountered.
+ * PGC_ERR_SSL - SSL Error
+ */
+enum pgc_err pgc_buf_sread(
+        struct pgc_buf *buffer, 
+        SSL *ssl, 
+        const size_t nbytes,
+        int *ssl_error);
 
 /**
  * Read up to nbytes bytes from a file stream and append them to the 
@@ -212,14 +229,29 @@ enum pgc_err pgc_buf_fread(
  * @param buffer The buffer.
  * @param fd The file descriptor to write bytes to.
  * @param nbytes The number of bytes to write.
+ * @return
  *      PGC_ERR_OK      - All ok.
  *      PGC_ERR_OOB     - Attempt to read past available data.
- *      PGC_ERR_SYS     - System error (check errno).
+ *      PGC_ERR_SYS     - System Error
+ *      PGC_ERR_WNT     - Wants more time
  */
 enum pgc_err pgc_buf_write(
         struct pgc_buf *buffer, 
         int fd, 
         const size_t nbytes);
+
+/**
+ * Write up to nbytes bytes to a secure connection.
+ * @return
+ * PGC_ERR_OK - All OK.
+ * PGC_ERR_OOB - Attempt to read past available data.
+ * PGC_ERR_SSL - SSL Error
+ */
+enum pgc_err pgc_buf_swrite(
+        struct pgc_buf *buffer, 
+        SSL *ssl, 
+        const size_t nbytes,
+        int *ssl_error);
 
 /**
  * Write up to nbytes bytes to a FILE stream.
