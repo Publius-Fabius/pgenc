@@ -7,6 +7,14 @@ can then be used to generate text parsers in standard C.  PGENC is fully self
 parsing and comes with its own definition defined in its own language 
 (see grammar/self.g).
 
+Clone PGENC:
+```
+    git clone https://github.com/Publius-Fabius/selc.git
+    git clone https://github.com/Publius-Fabius/pgenc.git
+    cd pgenc
+    make bin/pgenc
+```
+
 In a file named input.grammar:
 ```
     let dog = 'd' 'o' 'g';
@@ -33,7 +41,7 @@ Compile in the standard manner:
     gcc -o my_program my_code.c my_parsers.c
 ```
 
-Here's an example of some generated code to parse the grammar itself:
+Here's an example of some code generated to parse PGENC itself.
 ```
 static const struct pgc_cset p0_p = { .words = { 0x3e00 , 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 } }; 
 const struct pgc_par pgc_self_wsc = PGC_PAR_SET(&p0_p); 
