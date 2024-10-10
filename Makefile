@@ -15,7 +15,7 @@ include/selc:
 includes: include/selc
 
 # error.h
-build/pgenc/error.o : source/pgenc/error.c include/pgenc/error.h
+build/pgenc/error.o : source/pgenc/error.c include/pgenc/error.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 # charset.h 
@@ -27,7 +27,7 @@ grind_test_charset : bin/test_charset
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # buffer.h
-build/pgenc/buffer.o : source/pgenc/buffer.c include/pgenc/buffer.h 
+build/pgenc/buffer.o : source/pgenc/buffer.c include/pgenc/buffer.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_buffer : tests/pgenc/buffer.c build/pgenc/buffer.o \
 	build/pgenc/error.o \
@@ -37,7 +37,7 @@ grind_test_buffer : bin/test_buffer
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # parser.h
-build/pgenc/parser.o : source/pgenc/parser.c include/pgenc/parser.h
+build/pgenc/parser.o : source/pgenc/parser.c include/pgenc/parser.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_parser : tests/pgenc/parser.c build/pgenc/parser.o \
 	build/pgenc/error.o \
@@ -56,7 +56,7 @@ lib/libpgenc_pristine.a : \
 	ar -crs $@ $^
 
 # stack.h
-build/pgenc/stack.o : source/pgenc/stack.c include/pgenc/stack.h
+build/pgenc/stack.o : source/pgenc/stack.c include/pgenc/stack.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_stack : tests/pgenc/stack.c build/pgenc/stack.o \
 	build/pgenc/error.o \
@@ -66,7 +66,7 @@ grind_test_stack : bin/test_stack
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # table.h
-build/pgenc/table.o : source/pgenc/table.c include/pgenc/table.h
+build/pgenc/table.o : source/pgenc/table.c include/pgenc/table.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_table : tests/pgenc/table.c \
 	build/pgenc/table.o \
@@ -76,7 +76,7 @@ grind_test_table : bin/test_table
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # ast.h
-build/pgenc/ast.o : source/pgenc/ast.c include/pgenc/ast.h
+build/pgenc/ast.o : source/pgenc/ast.c include/pgenc/ast.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_ast : tests/pgenc/ast.c \
 	build/pgenc/ast.o \
@@ -87,7 +87,7 @@ grind_test_ast : bin/test_ast
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # syntax.h
-build/pgenc/syntax.o : source/pgenc/syntax.c include/pgenc/syntax.h
+build/pgenc/syntax.o : source/pgenc/syntax.c include/pgenc/syntax.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 bin/test_syntax : tests/pgenc/syntax.c build/pgenc/syntax.o \
 	build/pgenc/error.o \
@@ -99,7 +99,7 @@ grind_test_syntax : bin/test_syntax
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
 # lang.h
-build/pgenc/lang_gen.o : source/pgenc/lang/gen.c include/pgenc/lang.h 
+build/pgenc/lang_gen.o : source/pgenc/lang/gen.c include/pgenc/lang.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
 build/pgenc/lang_parse.o : source/pgenc/lang/parse.c include/pgenc/lang.h 
 	$(CC) $(CFLAGS) -c -o $@ $<
