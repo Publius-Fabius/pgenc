@@ -92,6 +92,7 @@ static sel_err_t pgc_parse_syntax(
 int main(int argc, char **argv)
 {
         pgc_err_init();
+
         const char *src = "autogen.c";
         const char *dict = "autogen";
         const char *gram = NULL;
@@ -136,7 +137,7 @@ int main(int argc, char **argv)
         if(gram) {
                 struct pgc_stk *alloc = malloc(sizeof(struct pgc_stk));
                 struct pgc_ast_lst *syntax = NULL;
-                pgc_stk_init(alloc, blen, malloc(blen));
+                pgc_stk_init(alloc, malloc(blen), blen);
                 e = pgc_parse_syntax(alloc, gram, &syntax);
                 if(e != PGC_ERR_OK) {
                         free(alloc->bytes);

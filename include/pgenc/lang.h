@@ -39,11 +39,6 @@ sel_err_t pgc_lang_parse(
         struct pgc_stk *alloc,
         struct pgc_ast_lst **list);
 
-/** 
- * Mark the internal state's offset.
- */
-sel_err_t pgc_lang_mark(struct pgc_buf *buffer, void *state);
-
 /**
  * Read a character literal.
  * @param buffer The buffer to read from
@@ -55,6 +50,7 @@ sel_err_t pgc_lang_mark(struct pgc_buf *buffer, void *state);
 sel_err_t pgc_lang_readchar(
         struct pgc_buf *buf, 
         void *state,
+        const size_t start,
         const int16_t tag);
 
 /**
@@ -68,6 +64,7 @@ sel_err_t pgc_lang_readchar(
 sel_err_t pgc_lang_readutf8(
         struct pgc_buf *buffer, 
         void *state,
+        const size_t start,
         const int16_t tag);
 
 /**
@@ -80,6 +77,7 @@ sel_err_t pgc_lang_readutf8(
 sel_err_t pgc_lang_readstr(
         struct pgc_buf *buffer, 
         void *state,
+        const size_t start,
         const int16_t tag);
 
 /**
@@ -88,6 +86,7 @@ sel_err_t pgc_lang_readstr(
 sel_err_t pgc_lang_readenc(
         struct pgc_buf *buffer,
         void *state,
+        const size_t start,
         const int16_t atag,
         const int16_t utag,
         const size_t base,
@@ -127,7 +126,7 @@ sel_err_t pgc_lang_readterm(
         void *state,
         const struct pgc_par *arg,
         const int16_t utag,
-        sel_err_t (*reader)(struct pgc_buf *, void *, int16_t));
+        sel_err_t (*reader)(struct pgc_buf*, void*, const size_t, int16_t));
 
 /**
  * Capture an identifier.
@@ -170,7 +169,9 @@ sel_err_t pgc_lang_caprange(
         const struct pgc_par *arg);
 
 /**
- * Capture a UTF8 encoded value.
+ * Capture a UTF8 encoded value.  Note that this function only captures a UTF
+ * pair as encoded in the PGENC grammar (base16).  A true UTF8 capture may be
+ * constructed with pgc_lang_readutf8.
  */
 sel_err_t pgc_lang_caputf(
         struct pgc_buf *buffer,

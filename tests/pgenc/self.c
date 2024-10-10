@@ -11,7 +11,7 @@ enum pgc_err pgc_tst_par(
 {
         static uint8_t bytes[0xFFFF];
         struct pgc_stk alloc;
-        pgc_stk_init(&alloc, 0xFFFF, bytes);
+        pgc_stk_init(&alloc, bytes, 0xFFFF);
         struct pgc_buf buf;
         size_t len = strlen(string);
         pgc_buf_init(&buf, string, len, len);

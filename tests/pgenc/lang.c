@@ -16,7 +16,7 @@ enum pgc_err test_parse(
         pgc_buf_init(&buf, str, len, len);
 
         struct pgc_stk alloc;
-        pgc_stk_init(&alloc, 1024, allocbytes);
+        pgc_stk_init(&alloc, allocbytes, 1024);
 
         return pgc_lang_parse(par, &buf, &alloc,  syn);
 }

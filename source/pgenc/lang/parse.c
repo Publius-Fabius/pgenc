@@ -7,7 +7,6 @@ struct pgc_lang_parst {
         struct pgc_stk *alloc;
         struct pgc_ast_lst *list;
         int16_t utag;
-        size_t offset;
 };
 
 /**
@@ -44,31 +43,22 @@ sel_err_t pgc_lang_parse(
 {
         struct pgc_lang_parst parst;
         parst.alloc = alloc;
-        parst.offset = 0;
         parst.list = NULL;
-
         SEL_TRY_QUIETLY(pgc_par_run(par, buf, &parst));
-        PGC_STK_PUSH(*syn, alloc, sizeof(struct pgc_ast));
         *syn = pgc_ast_rev(parst.list);
-        return PGC_ERR_OK;
-}
-
-sel_err_t pgc_lang_mark(struct pgc_buf *buf, void *st)
-{
-        struct pgc_lang_parst *parst = st;
-        parst->offset = pgc_buf_tell(buf);
         return PGC_ERR_OK;
 }
 
 sel_err_t pgc_lang_readchar(
         struct pgc_buf *buf, 
         void *st,
+        const size_t offset,
         const int16_t tag)
 {
         struct pgc_lang_parst *parst = st;
         char result;
 
-        SEL_TRY_QUIETLY(pgc_buf_seek(buf, parst->offset));
+        SEL_TRY_QUIETLY(pgc_buf_seek(buf, offset));
         SEL_TRY_QUIETLY(pgc_buf_getchar(buf, &result));
 
         struct pgc_ast *node;
@@ -87,14 +77,14 @@ sel_err_t pgc_lang_readchar(
 sel_err_t pgc_lang_readstr(
         struct pgc_buf *buf, 
         void *state,
+        const size_t start,
         const int16_t tag)
 {
         struct pgc_lang_parst *parst = state;
-        const size_t start = parst->offset;
         const size_t stop = pgc_buf_tell(buf);
-        if(stop < start) {
-                SEL_ABORT();
-        }
+
+        SEL_ASSERT(start <= stop);
+      
         const size_t len = stop - start;
         char *str;
         PGC_STK_PUSH(str, parst->alloc, len + 1);
@@ -118,14 +108,13 @@ sel_err_t pgc_lang_readstr(
 sel_err_t pgc_lang_readutf8(
         struct pgc_buf *buf, 
         void *state,
+        const size_t start,
         const int16_t tag)
 {
         struct pgc_lang_parst *parst = state;
-        const size_t start = parst->offset;
         const size_t stop = pgc_buf_tell(buf);
-        if(stop < start) {
-                SEL_ABORT();
-        }
+
+        SEL_ASSERT(start <= stop);
 
         uint32_t value;
 
@@ -147,6 +136,7 @@ sel_err_t pgc_lang_readutf8(
 sel_err_t pgc_lang_readenc(
         struct pgc_buf *buf,
         void *state,
+        const size_t start,
         const int16_t atag,
         const int16_t utag,
         const size_t base,
@@ -155,17 +145,15 @@ sel_err_t pgc_lang_readenc(
 {
         struct pgc_lang_parst *parst = state;
 
-        const size_t start = parst->offset;
         const size_t stop = pgc_buf_tell(buf);
-        if(stop < start) {
-                SEL_ABORT();
-        }
+
+        SEL_ASSERT(start <= stop);
 
         struct pgc_ast *node;
         PGC_STK_PUSH(node, parst->alloc, sizeof(struct pgc_ast));
         pgc_ast_initany(node, atag, utag);
 
-        SEL_TRY_QUIETLY(pgc_buf_seek(buf, parst->offset));
+        SEL_TRY_QUIETLY(pgc_buf_seek(buf, start));
         SEL_TRY_QUIETLY(pgc_buf_decode(
                 buf, stop - start, base, dict, accum, &node->u.any));
 
@@ -210,10 +198,9 @@ sel_err_t pgc_lang_readexp(
         if(err != PGC_ERR_OK) {  
 
                 const size_t current_size = pgc_stk_size(parst->alloc);
-                if(current_size < saved_size) {
-                        SEL_ABORT();
-                }
 
+                SEL_ASSERT(saved_size <= current_size);
+            
                 /* Restore the allocator's state. */
                 pgc_stk_pop(parst->alloc, current_size - saved_size);
 
@@ -261,16 +248,16 @@ sel_err_t pgc_lang_readterm(
         void *state,
         const struct pgc_par *arg,
         const int16_t utag,
-        sel_err_t (*reader)(struct pgc_buf *, void *, int16_t))
+        sel_err_t (*reader)(struct pgc_buf*, void*, const size_t, int16_t))
 {
         /* Mark the offset. */
-        SEL_TRY_QUIETLY(pgc_lang_mark(buffer, state));
+        const size_t offset = pgc_buf_tell(buffer);
 
         /* Run the sub-parser. */
         SEL_TRY_QUIETLY(pgc_par_run(arg, buffer, state));
 
         /* Read the value. */
-        return reader(buffer, state, utag);
+        return reader(buffer, state, offset, utag);
 }
 
 sel_err_t pgc_lang_capid(
@@ -285,11 +272,13 @@ sel_err_t pgc_lang_capid(
 static sel_err_t pgc_lang_readhex8(
         struct pgc_buf *buffer,
         void *state,
+        const size_t offset,
         int16_t tag)
 {
         return pgc_lang_readenc(
                 buffer, 
                 state, 
+                offset,
                 PGC_AST_INT8, 
                 tag, 
                 16, 
@@ -318,11 +307,13 @@ sel_err_t pgc_lang_capchar(
 static sel_err_t pgc_lang_readuint32(
         struct pgc_buf *buffer,
         void *state,
+        const size_t offset,
         int16_t tag)
 {
         return pgc_lang_readenc(
                 buffer, 
                 state, 
+                offset,
                 PGC_AST_UINT32, 
                 tag, 
                 10, 
@@ -350,11 +341,13 @@ sel_err_t pgc_lang_caprange(
 static sel_err_t pgc_lang_readhex32(
         struct pgc_buf *buffer,
         void *state,
+        const size_t offset,
         int16_t tag)
 {
         return pgc_lang_readenc(
                 buffer, 
                 state, 
+                offset,
                 PGC_AST_UINT32, 
                 tag, 
                 16, 

@@ -4,8 +4,8 @@
 
 struct pgc_stk *pgc_stk_init(
         struct pgc_stk *stack, 
-        const size_t length, 
-        void *bytes)
+        void *bytes,
+        const size_t length)
 {
         stack->bytes = bytes;
         stack->max = length;

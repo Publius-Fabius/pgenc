@@ -8,7 +8,7 @@ int main(int argc, char **args)
         puts("running test_stack...");
         struct pgc_stk stk;
         char buf[16];
-        pgc_stk_init(&stk, 16, buf);
+        pgc_stk_init(&stk, buf, 16);
         SEL_TEST(buf ==  pgc_stk_push(&stk, 8));
         SEL_TEST(pgc_stk_push(&stk, 10) == NULL);
         SEL_TEST(pgc_stk_push(&stk, 8) == (buf + 8));

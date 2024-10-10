@@ -33,8 +33,8 @@ size_t pgc_stk_max(struct pgc_stk *stk);
  */
 struct pgc_stk *pgc_stk_init(
         struct pgc_stk *stk, 
-        const size_t length, 
-        void *bytes);
+        void *bytes,
+        const size_t length);
 
 /**
  * Push the stack, incrementing the offset by nbytes, returning
