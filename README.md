@@ -1,4 +1,4 @@
-# pgenc - Parser Generators for C
+# pgenc - Parser Generator for C
 
 This project provides a robust option for generating highly optimized static parsers in standard C99.  Parsers are defined as a grammar in a language inspired by EBNF, but with several powerful extensions.  These grammar files can then be used to generate parsers in standard C that can be used for a variety of parsing applications.
 
