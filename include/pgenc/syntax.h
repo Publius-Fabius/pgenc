@@ -25,6 +25,7 @@ enum pgc_syn_tag
         PGC_SYN_SET,                            /** Set Definition */
         PGC_SYN_LET,                            /** Let Definition */
         PGC_SYN_DEC,                            /** Declaration */
+        PGC_SYN_EXT,                            /** Extern Declaration */
         PGC_SYN_DEF,                            /** Definition */
         PGC_SYN_SRC                             /** Source Node */
 };

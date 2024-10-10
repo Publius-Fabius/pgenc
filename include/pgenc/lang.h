@@ -252,6 +252,11 @@ sel_err_t pgc_lang_capexp(
 sel_err_t pgc_lang_setdec(struct pgc_buf *buffer, void *state);
 
 /**
+ * Set internal utag to PGC_SYN_EXT.
+ */
+sel_err_t pgc_lang_setext(struct pgc_buf *buffer, void *state);
+
+/**
  * Set internal utag to PGC_SYN_DEC.
  */
 sel_err_t pgc_lang_setdef(struct pgc_buf *buffer, void *state);

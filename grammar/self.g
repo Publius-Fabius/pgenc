@@ -83,7 +83,9 @@ let set = 's' 'e' 't' wsidwseq setexp ';' @pgc_lang_setset;
 
 let let = 'l' 'e' 't' wsidwseq exp ';' @pgc_lang_setlet; 
 
-let stmt = pgc_lang_capstmt $ def | dec | let | set; 
+let ext = 'e' 'x' 't' wsidws id ';' @pgc_lang_setext;
+
+let stmt = pgc_lang_capstmt $ def | dec | let | set | ext;
 
 let cmt = '#' 0_1024print; 
       

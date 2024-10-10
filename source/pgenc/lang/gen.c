@@ -521,6 +521,22 @@ static sel_err_t pgc_lang_gen_dec(
         return PGC_ERR_OK;
 }
 
+static sel_err_t pgc_lang_gen_ext(
+        struct pgc_ast *syn,
+        struct pgc_lang_genst *st)
+{
+        struct pgc_ast_lst *lst = pgc_ast_tolst(syn);
+        char *prefix = pgc_ast_tostr(pgc_ast_at(lst, 0)->val);
+        char *label = pgc_ast_tostr(pgc_ast_at(lst, 1)->val);
+        SEL_IO(fprintf(st->out,
+                "extern const struct pgc_par %s_%s; \r\n"
+                "#define %s_%s %s_%s \r\n", 
+                prefix, label, 
+                st->prefix, label,
+                prefix, label));
+        return PGC_ERR_OK;
+}
+
 static sel_err_t pgc_lang_gen_def(
         struct pgc_ast *syn,
         struct pgc_lang_genst *st)
@@ -591,6 +607,7 @@ static sel_err_t pgc_lang_gen_stmt(
 {
         switch(pgc_syn_typeof(syn)) {
                 case PGC_SYN_DEC: return pgc_lang_gen_dec(syn, st);
+                case PGC_SYN_EXT: return pgc_lang_gen_ext(syn, st);
                 case PGC_SYN_DEF: return pgc_lang_gen_def(syn, st);
                 case PGC_SYN_LET: return pgc_lang_gen_let(syn, st);
                 case PGC_SYN_SET: return pgc_lang_gen_set(syn, st);
@@ -599,46 +616,13 @@ static sel_err_t pgc_lang_gen_stmt(
         return PGC_ERR_OK;
 }
 
-// static sel_err_t pgc_lang_gen_result(
-//         struct pgc_ast_lst *lst, 
-//         struct pgc_lang_genst *st)
-// {
-//         SEL_IO(fprintf(st->out, 
-//                 "%sstatic struct %s result;\r\n", 
-//                 MARGIN, st->dict));
-//         for(struct pgc_ast_lst *l = lst; l; l = l->nxt) {
-//                 struct pgc_ast *stmt = l->val;
-//                 if(!stmt) {
-//                         SEL_ABORT();
-//                 }
-//                 char *name = pgc_ast_tostr(pgc_syn_getname(stmt));
-//                 switch(pgc_syn_typeof(stmt)) {
-//                         case PGC_SYN_DEC:
-//                         case PGC_SYN_LET:
-//                         case PGC_SYN_SET: SEL_IO(
-//                                 fprintf(st->out, 
-//                                 "%sresult.%s = %s;\r\n",
-//                                 MARGIN, name, name));
-//                         case PGC_SYN_DEF: break;
-//                         default: SEL_ABORT();
-//                 }
-//         }
-//         SEL_IO(fprintf(st->out, "%sreturn &result;\r\n", MARGIN));
-//         return PGC_ERR_OK;
-// }
-
 static sel_err_t pgc_lang_gen_stmts_try(
         struct pgc_ast_lst *lst,
         struct pgc_lang_genst *st)
 {
-        // SEL_IO(fprintf(st->out,
-        //         "struct %s *export_%s()\r\n{\r\n",
-        //         st->dict, st->dict));
         for(struct pgc_ast_lst *l = lst; l; l = l->nxt) {
                 SEL_TRY_QUIETLY(pgc_lang_gen_stmt(l->val, st));
         }
-        // PGC_TRACE(pgc_lang_gen_result(lst, st));
-        // SEL_IO(fputs("}\r\n", st->out));
         return PGC_ERR_OK;
 }
 

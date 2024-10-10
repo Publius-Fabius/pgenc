@@ -2,10 +2,9 @@
 
 This project provides a robust option for generating highly optimized static 
 parsers in standard C99.  Parsers are defined as a grammar in a language 
-inspired by EBNF, but with several powerful extensions.  These grammar files 
-can then be used to generate text parsers in standard C.  PGENC is fully self 
-parsing and comes with its own definition defined in its own language 
-(see grammar/self.g).
+inspired by EBNF, but with several powerful extensions.  Grammar files can 
+be used to generate text parsers in C.  PGENC is fully self parsing and comes 
+with its own definition defined in its own language (see grammar/self.g).
 
 Clone PGENC:
 ```

@@ -455,6 +455,11 @@ sel_err_t pgc_lang_setdef(struct pgc_buf *buffer, void *state)
         return PGC_ERR_OK;
 }
 
+sel_err_t pgc_lang_setext(struct pgc_buf *buffer, void *state)
+{
+        pgc_lang_setutag(state, PGC_SYN_EXT);
+        return PGC_ERR_OK;
+}
 
 sel_err_t pgc_lang_setset(struct pgc_buf *buffer, void *state)
 {
