@@ -1,5 +1,6 @@
 
 #include "pgenc/charset.h"
+#include <ctype.h>
 
 struct pgc_cset *pgc_cset_zero(struct pgc_cset *set)
 {
@@ -18,20 +19,20 @@ struct pgc_cset *pgc_cset_cpy(struct pgc_cset *dest, struct pgc_cset *src)
 }
 
 int pgc_cset_in(
-        struct pgc_cset *set, 
-        const int ele)
+        const struct pgc_cset *set, 
+        const uint8_t ele)
 {
-        const uint32_t c = (uint32_t)ele;
+        const uint32_t c = ele;
         const uint32_t word = c >> 5;
         const uint32_t bit = 1 << (c & 31);
-        return set->words[word] & bit;
+        return (set->words[word] & bit) != 0;
 }
 
 struct pgc_cset *pgc_cset_set(
         struct pgc_cset *set, 
-        const int ele)
+        const uint8_t ele)
 {
-        const uint32_t c = (uint32_t)ele;
+        const uint32_t c = ele;
         const uint32_t word = c >> 5;
         const uint32_t bit = 1 << (c & 31);
         set->words[word] |= bit;
@@ -40,9 +41,9 @@ struct pgc_cset *pgc_cset_set(
 
 struct pgc_cset *pgc_cset_unset(
         struct pgc_cset *set, 
-        const int element)
+        const uint8_t element)
 {
-        const uint32_t c = (uint32_t)element;
+        const uint32_t c = element;
         const uint32_t word = c >> 5;
         const uint32_t bit = 1 << (c & 31);
         const uint32_t mask = ~bit;
@@ -50,7 +51,7 @@ struct pgc_cset *pgc_cset_unset(
         return set;
 }
 
-#define PGC_CSET_FOR(VAR) for(int VAR = 0; VAR < 0x100; ++VAR)
+#define PGC_CSET_FOR(VAR) for(uint16_t VAR = 0; VAR < 0x100; ++VAR)
 
 struct pgc_cset *pgc_cset_iso(
         struct pgc_cset *set,
@@ -58,8 +59,8 @@ struct pgc_cset *pgc_cset_iso(
 {
         pgc_cset_zero(set);
         PGC_CSET_FOR(c) {
-                if(pred(c)) {
-                        pgc_cset_set(set, c);
+                if(pred((uint8_t)c)) {
+                        pgc_cset_set(set, (uint8_t)c);
                 }
         }
         return set;
@@ -72,8 +73,10 @@ struct pgc_cset *pgc_cset_isect(
 {
         pgc_cset_zero(set);
         PGC_CSET_FOR(c) {
-                if(pgc_cset_in(fst, c) && pgc_cset_in(snd, c)) {
-                        pgc_cset_set(set, c);
+                if(     pgc_cset_in(fst, (uint8_t)c) && 
+                        pgc_cset_in(snd, (uint8_t)c)) 
+                {
+                        pgc_cset_set(set, (uint8_t)c);
                 }
         }
         return set;
@@ -86,8 +89,10 @@ struct pgc_cset *pgc_cset_union(
 {
         pgc_cset_zero(set);
         PGC_CSET_FOR(c) {
-                if(pgc_cset_in(fst, c) || pgc_cset_in(snd, c)) {
-                        pgc_cset_set(set, c);
+                if(     pgc_cset_in(fst, (uint8_t)c) || 
+                        pgc_cset_in(snd, (uint8_t)c)) 
+                {
+                        pgc_cset_set(set, (uint8_t)c);
                 }
         }
         return set;
@@ -100,9 +105,29 @@ struct pgc_cset *pgc_cset_diff(
 {
         pgc_cset_zero(set);
         PGC_CSET_FOR(c) {
-                if(pgc_cset_in(fst, c) && !pgc_cset_in(snd, c)) {
-                        pgc_cset_set(set, c);
+                if(     pgc_cset_in(fst, (uint8_t)c) && 
+                        !pgc_cset_in(snd, (uint8_t)c)) 
+                {
+                        pgc_cset_set(set, (uint8_t)c);
                 }
         }
         return set;
 }
+
+#define PGC_CSET_CTYPE(fun) \
+int pgc_cset_ ## fun (const uint8_t c) { \
+        return fun(c); \
+}
+
+PGC_CSET_CTYPE(isalnum)
+PGC_CSET_CTYPE(isalpha)
+PGC_CSET_CTYPE(isblank)
+PGC_CSET_CTYPE(iscntrl)
+PGC_CSET_CTYPE(isdigit)
+PGC_CSET_CTYPE(isgraph)
+PGC_CSET_CTYPE(islower)
+PGC_CSET_CTYPE(isprint)
+PGC_CSET_CTYPE(ispunct)
+PGC_CSET_CTYPE(isspace)
+PGC_CSET_CTYPE(isupper)
+PGC_CSET_CTYPE(isxdigit)

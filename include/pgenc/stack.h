@@ -4,8 +4,7 @@
 #include <stddef.h>
 
 /** Byte Stack */
-struct pgc_stk
-{
+struct pgc_stk {
         size_t max;
         size_t size;
         void *bytes;

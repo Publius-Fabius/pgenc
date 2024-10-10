@@ -158,73 +158,73 @@ struct pgc_ast *pgc_ast_initlst(
 
 int8_t pgc_ast_toint8(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_INT8);
+        SEL_ASSERT(a->atag == PGC_AST_INT8);
         return a->u.int8;
 }
 
 uint8_t pgc_ast_touint8(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_UINT8);
+        SEL_ASSERT(a->atag == PGC_AST_UINT8);
         return a->u.uint8;
 }
 
 int16_t pgc_ast_toint16(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_INT16);
+        SEL_ASSERT(a->atag == PGC_AST_INT16);
         return a->u.int16;
 }
 
 uint16_t pgc_ast_touint16(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_UINT16);
+        SEL_ASSERT(a->atag == PGC_AST_UINT16);
         return a->u.uint16;
 }
 
 int32_t pgc_ast_toint32(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_INT32);
+        SEL_ASSERT(a->atag == PGC_AST_INT32);
         return a->u.int32;
 }
 
 uint32_t pgc_ast_touint32(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_UINT32);
+        SEL_ASSERT(a->atag == PGC_AST_UINT32);
         return a->u.uint32;
 }
 
 int64_t pgc_ast_toint64(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_INT64);
+        SEL_ASSERT(a->atag == PGC_AST_INT64);
         return a->u.int64;
 }
 
 uint64_t pgc_ast_touint64(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_UINT64);
+        SEL_ASSERT(a->atag == PGC_AST_UINT64);
         return a->u.uint64;
 }
 
 float pgc_ast_tofloat32(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_FLOAT32);
+        SEL_ASSERT(a->atag == PGC_AST_FLOAT32);
         return a->u.float32;
 }
 
 double pgc_ast_tofloat64(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_FLOAT64);
+        SEL_ASSERT(a->atag == PGC_AST_FLOAT64);
         return a->u.float64;
 }
 
 char *pgc_ast_tostr(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_STR);
+        SEL_ASSERT(a->atag == PGC_AST_STR);
         return a->u.str;
 }
 
 struct pgc_ast_lst *pgc_ast_tolst(struct pgc_ast *a)
 {
-        PGC_ASSERT(a->atag == PGC_AST_LST);
+        SEL_ASSERT(a->atag == PGC_AST_LST);
         return a->u.lst;
 }
 
@@ -257,7 +257,7 @@ struct pgc_ast_lst *pgc_ast_cat(
 struct pgc_ast_lst *pgc_ast_at(struct pgc_ast_lst *a, const size_t i)
 {
         for(size_t n = 0; n < i; ++n) {
-                PGC_ASSERT(a);
+                SEL_ASSERT(a);
                 a = a->nxt;
         }
         return a;

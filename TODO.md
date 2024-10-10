@@ -10,8 +10,9 @@ Reorder argument order of pgc_stk_init
 
 Add automation for linking.
 
-Make TODO.md an official part of the project.
-
 Add string literals to the parsing language.
 
 Consider changing cap_ to read_
+
+
+Fix lang_mark to go on stack.

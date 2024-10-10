@@ -36,8 +36,8 @@ struct pgc_lang_parst {
                 return PGC_ERR_OOB; \
         }
 
-enum pgc_err pgc_lang_parse(
-        struct pgc_par *par,
+sel_err_t pgc_lang_parse(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         struct pgc_stk *alloc,
         struct pgc_ast_lst **syn)
@@ -47,20 +47,20 @@ enum pgc_err pgc_lang_parse(
         parst.offset = 0;
         parst.list = NULL;
 
-        PGC_TRY_QUIETLY(pgc_par_run(par, buf, &parst));
+        SEL_TRY_QUIETLY(pgc_par_run(par, buf, &parst));
         PGC_STK_PUSH(*syn, alloc, sizeof(struct pgc_ast));
         *syn = pgc_ast_rev(parst.list);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_mark(struct pgc_buf *buf, void *st)
+sel_err_t pgc_lang_mark(struct pgc_buf *buf, void *st)
 {
         struct pgc_lang_parst *parst = st;
         parst->offset = pgc_buf_tell(buf);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_readchar(
+sel_err_t pgc_lang_readchar(
         struct pgc_buf *buf, 
         void *st,
         const int16_t tag)
@@ -68,8 +68,8 @@ enum pgc_err pgc_lang_readchar(
         struct pgc_lang_parst *parst = st;
         char result;
 
-        PGC_TRY_QUIETLY(pgc_buf_seek(buf, parst->offset));
-        PGC_TRY_QUIETLY(pgc_buf_getchar(buf, &result));
+        SEL_TRY_QUIETLY(pgc_buf_seek(buf, parst->offset));
+        SEL_TRY_QUIETLY(pgc_buf_getchar(buf, &result));
 
         struct pgc_ast *node;
         PGC_STK_PUSH(node, parst->alloc, sizeof(struct pgc_ast));
@@ -84,7 +84,7 @@ enum pgc_err pgc_lang_readchar(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_readstr(
+sel_err_t pgc_lang_readstr(
         struct pgc_buf *buf, 
         void *state,
         const int16_t tag)
@@ -93,15 +93,15 @@ enum pgc_err pgc_lang_readstr(
         const size_t start = parst->offset;
         const size_t stop = pgc_buf_tell(buf);
         if(stop < start) {
-                PGC_ABORT();
+                SEL_ABORT();
         }
         const size_t len = stop - start;
         char *str;
         PGC_STK_PUSH(str, parst->alloc, len + 1);
         str[len] = 0;
         
-        PGC_TRY_QUIETLY(pgc_buf_seek(buf, start));
-        PGC_TRY_QUIETLY(pgc_buf_get(buf, str, len));
+        SEL_TRY_QUIETLY(pgc_buf_seek(buf, start));
+        SEL_TRY_QUIETLY(pgc_buf_get(buf, str, len));
 
         struct pgc_ast *node;
         PGC_STK_PUSH(node, parst->alloc, sizeof(struct pgc_ast));
@@ -115,7 +115,7 @@ enum pgc_err pgc_lang_readstr(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_readutf8(
+sel_err_t pgc_lang_readutf8(
         struct pgc_buf *buf, 
         void *state,
         const int16_t tag)
@@ -124,13 +124,13 @@ enum pgc_err pgc_lang_readutf8(
         const size_t start = parst->offset;
         const size_t stop = pgc_buf_tell(buf);
         if(stop < start) {
-                PGC_ABORT();
+                SEL_ABORT();
         }
 
         uint32_t value;
 
-        PGC_TRY_QUIETLY(pgc_buf_seek(buf, start));
-        PGC_TRY_QUIETLY(pgc_buf_getutf8(buf, &value));
+        SEL_TRY_QUIETLY(pgc_buf_seek(buf, start));
+        SEL_TRY_QUIETLY(pgc_buf_getutf8(buf, &value));
 
         struct pgc_ast *node;
         PGC_STK_PUSH(node, parst->alloc, sizeof(struct pgc_ast));
@@ -144,7 +144,7 @@ enum pgc_err pgc_lang_readutf8(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_readenc(
+sel_err_t pgc_lang_readenc(
         struct pgc_buf *buf,
         void *state,
         const int16_t atag,
@@ -158,15 +158,15 @@ enum pgc_err pgc_lang_readenc(
         const size_t start = parst->offset;
         const size_t stop = pgc_buf_tell(buf);
         if(stop < start) {
-                PGC_ABORT();
+                SEL_ABORT();
         }
 
         struct pgc_ast *node;
         PGC_STK_PUSH(node, parst->alloc, sizeof(struct pgc_ast));
         pgc_ast_initany(node, atag, utag);
 
-        PGC_TRY_QUIETLY(pgc_buf_seek(buf, parst->offset));
-        PGC_TRY_QUIETLY(pgc_buf_decode(
+        SEL_TRY_QUIETLY(pgc_buf_seek(buf, parst->offset));
+        SEL_TRY_QUIETLY(pgc_buf_decode(
                 buf, stop - start, base, dict, accum, &node->u.any));
 
         struct pgc_ast_lst *head;
@@ -185,10 +185,10 @@ void pgc_lang_setutag(void *state, const int16_t tag)
         parst->utag = tag;
 }
 
-enum pgc_err pgc_lang_readexp(
+sel_err_t pgc_lang_readexp(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *parser,
+        const struct pgc_par *parser,
         const int16_t utag,
         enum pgc_lang_readop ops)
 {
@@ -204,14 +204,14 @@ enum pgc_err pgc_lang_readexp(
         parst->list = NULL;
 
         /* Run the sub-parser. */
-        enum pgc_err err = pgc_par_run(parser, buffer, state);
+        sel_err_t err = pgc_par_run(parser, buffer, state);
 
         /* Handle a parsing failure. */
         if(err != PGC_ERR_OK) {  
 
                 const size_t current_size = pgc_stk_size(parst->alloc);
                 if(current_size < saved_size) {
-                        PGC_ABORT();
+                        SEL_ABORT();
                 }
 
                 /* Restore the allocator's state. */
@@ -256,33 +256,33 @@ enum pgc_err pgc_lang_readexp(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_readterm(
+sel_err_t pgc_lang_readterm(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg,
+        const struct pgc_par *arg,
         const int16_t utag,
-        enum pgc_err (*reader)(struct pgc_buf *, void *, int16_t))
+        sel_err_t (*reader)(struct pgc_buf *, void *, int16_t))
 {
         /* Mark the offset. */
-        PGC_TRY_QUIETLY(pgc_lang_mark(buffer, state));
+        SEL_TRY_QUIETLY(pgc_lang_mark(buffer, state));
 
         /* Run the sub-parser. */
-        PGC_TRY_QUIETLY(pgc_par_run(arg, buffer, state));
+        SEL_TRY_QUIETLY(pgc_par_run(arg, buffer, state));
 
         /* Read the value. */
         return reader(buffer, state, utag);
 }
 
-enum pgc_err pgc_lang_capid(
+sel_err_t pgc_lang_capid(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readterm(
                 buffer, state, arg, PGC_SYN_ID, pgc_lang_readstr);
 }
 
-static enum pgc_err pgc_lang_readhex8(
+static sel_err_t pgc_lang_readhex8(
         struct pgc_buf *buffer,
         void *state,
         int16_t tag)
@@ -297,25 +297,25 @@ static enum pgc_err pgc_lang_readhex8(
                 pgc_buf_decode_uint8);
 }
 
-enum pgc_err pgc_lang_capxbyte(
+sel_err_t pgc_lang_capxbyte(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readterm(
                 buffer, state, arg, PGC_SYN_CHAR, pgc_lang_readhex8);
 }
 
-enum pgc_err pgc_lang_capchar(
+sel_err_t pgc_lang_capchar(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readterm(
                 buffer, state, arg, PGC_SYN_CHAR, pgc_lang_readchar);
 }
 
-static enum pgc_err pgc_lang_readuint32(
+static sel_err_t pgc_lang_readuint32(
         struct pgc_buf *buffer,
         void *state,
         int16_t tag)
@@ -330,24 +330,24 @@ static enum pgc_err pgc_lang_readuint32(
                 pgc_buf_decode_uint32);
 }
 
-enum pgc_err pgc_lang_capnum(
+sel_err_t pgc_lang_capnum(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readterm(
                 buffer, state, arg, PGC_SYN_NUM, pgc_lang_readuint32);
 }
 
-enum pgc_err pgc_lang_caprange(
+sel_err_t pgc_lang_caprange(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *parser)
+        const struct pgc_par *parser)
 {
         return pgc_lang_readexp(buffer, state, parser, PGC_SYN_RANGE, 0);
 }
 
-static enum pgc_err pgc_lang_readhex32(
+static sel_err_t pgc_lang_readhex32(
         struct pgc_buf *buffer,
         void *state,
         int16_t tag)
@@ -362,123 +362,123 @@ static enum pgc_err pgc_lang_readhex32(
                 pgc_buf_decode_uint32);
 }
 
-enum pgc_err pgc_lang_caputf(
+sel_err_t pgc_lang_caputf(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readterm(
                 buffer, state, arg, PGC_SYN_NUM, pgc_lang_readhex32);
 }
 
-enum pgc_err pgc_lang_caputfrange(
+sel_err_t pgc_lang_caputfrange(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *parser)
+        const struct pgc_par *parser)
 {
         return pgc_lang_readexp(buffer, state, parser, PGC_SYN_UTF, 0);
 }
 
-enum pgc_err pgc_lang_setunion(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setunion(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_UNION);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_setdiff(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setdiff(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_DIFF);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_capsetexp(
+sel_err_t pgc_lang_capsetexp(
         struct pgc_buf *buffer, 
         void *state, 
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readexp(
                 buffer, state, arg, 0, PGC_BLD_POLY | PGC_BLD_MERGE);
 }
 
-enum pgc_err pgc_lang_setrep(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setrep(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_REP);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_setand(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setand(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_AND);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_setor(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setor(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_OR);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_setcall(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setcall(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_CALL);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_caprep(
+sel_err_t pgc_lang_caprep(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readexp(buffer, state, arg, PGC_SYN_REP, 0);
 }
 
-enum pgc_err pgc_lang_caphook(
+sel_err_t pgc_lang_caphook(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readterm(
                 buffer, state, arg, PGC_SYN_HOOK, pgc_lang_readstr);
 }
 
-enum pgc_err pgc_lang_capexp(
+sel_err_t pgc_lang_capexp(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readexp(
                 buffer, state, arg, 0, PGC_BLD_POLY | PGC_BLD_MERGE);
 }
 
-enum pgc_err pgc_lang_setdec(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setdec(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_DEC);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_setdef(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setdef(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_DEF);
         return PGC_ERR_OK;
 }
 
 
-enum pgc_err pgc_lang_setset(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setset(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_SET);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_setlet(struct pgc_buf *buffer, void *state)
+sel_err_t pgc_lang_setlet(struct pgc_buf *buffer, void *state)
 {
         pgc_lang_setutag(state, PGC_SYN_LET);
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_lang_capstmt(
+sel_err_t pgc_lang_capstmt(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *arg)
+        const struct pgc_par *arg)
 {
         return pgc_lang_readexp(
                 buffer, state, arg, 0, PGC_BLD_POLY);

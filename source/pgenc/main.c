@@ -28,41 +28,37 @@ static void pgc_print_help()
         puts("END");
 }
 
-static enum pgc_err pgc_parse_syntax(
+static sel_err_t pgc_parse_syntax(
         struct pgc_stk *alloc,
         const char *fname, 
         struct pgc_ast_lst **syntax)
 {
-        struct pgc_self *self = export_pgc_self();
-        struct pgc_par *src_parser = pgc_self_src(self);
+        const struct pgc_par *src_parser = &pgc_self_src;
 
-        PGC_ASSERT(self);
-        PGC_ASSERT(src_parser);
-  
         FILE *file = fopen(fname, "r");
         if(!file) {
                 fputs("unable to open grammar file\n", stderr);
                 fprintf(stderr, "errno=%s\n", strerror(errno));
-                PGC_THROW(PGC_ERR_SYS);
+                return SEL_REPORT(PGC_ERR_SYS);
         }
 
-        PGC_IO(fseek(file, 0, SEEK_END));
+        SEL_IO(fseek(file, 0, SEEK_END));
         const size_t flen = (size_t)ftell(file);
-        PGC_IO(fseek(file, 0, SEEK_SET));
+        SEL_IO(fseek(file, 0, SEEK_SET));
 
         void *addr = malloc(flen);
         if(!addr) {
                 fclose(file);
                 fputs("file failed to read (out of memory)", stderr);
-                PGC_THROW(PGC_ERR_SYS);
+                return SEL_REPORT(PGC_ERR_SYS);
         }
         
         struct pgc_buf buf; pgc_buf_init(&buf, addr, flen, 0);
-        enum pgc_err e = pgc_buf_fread(&buf, file, flen);
+        sel_err_t e = pgc_buf_fread(&buf, file, flen);
         fclose(file);
         if(e != PGC_ERR_OK) {
                 fputs("file failed to read\n", stderr);
-                PGC_THROW(PGC_ERR_SYS);
+                return SEL_REPORT(PGC_ERR_SYS);
         }
         
         e = pgc_lang_parse(src_parser, &buf, alloc, syntax);
@@ -70,13 +66,13 @@ static enum pgc_err pgc_parse_syntax(
 
         if(e != PGC_ERR_OK) {
                 fputs("grammar failed to parse\n", stderr);
-                PGC_THROW(PGC_ERR_SYS);
+                return SEL_REPORT(PGC_ERR_SYS);
         }
 
         const size_t offset = pgc_buf_tell(&buf);
         const size_t end = pgc_buf_end(&buf);
 
-        PGC_ASSERT(offset <= end);
+        SEL_ASSERT(offset <= end);
 
         if(offset != end) {
                 static const size_t BUFLEN = 127;
@@ -85,9 +81,9 @@ static enum pgc_err pgc_parse_syntax(
                 size_t msglen = end - offset;
                 msglen = msglen <= BUFLEN ? msglen : BUFLEN;
                 msgbuf[msglen] = 0;
-                PGC_TRY(pgc_buf_get(&buf, msgbuf, msglen));
+                SEL_TRY(pgc_buf_get(&buf, msgbuf, msglen));
                 fprintf(stderr, "%s\n", msgbuf);
-                PGC_THROW(PGC_ERR_SYN);
+                return SEL_REPORT(PGC_ERR_SYN);
         }
 
         return PGC_ERR_OK;
@@ -95,6 +91,7 @@ static enum pgc_err pgc_parse_syntax(
 
 int main(int argc, char **argv)
 {
+        pgc_err_init();
         const char *src = "autogen.c";
         const char *dict = "autogen";
         const char *gram = NULL;
@@ -134,7 +131,7 @@ int main(int argc, char **argv)
                 exit(EXIT_FAILURE);
         }
 
-        enum pgc_err e = 0;
+        sel_err_t e = 0;
 
         if(gram) {
                 struct pgc_stk *alloc = malloc(sizeof(struct pgc_stk));
@@ -162,7 +159,7 @@ int main(int argc, char **argv)
         
         if(e != PGC_ERR_OK) {
                 fputs("error generating parsers\n", stderr);
-                fprintf(stderr, "pgc_err=%s\n", pgc_strerror(e));
+                fprintf(stderr, "pgc_err=%s\n", sel_strerror(e));
                 if(e == PGC_ERR_SYS) {
                         fprintf(stderr, "errno=%s\n", strerror(errno));
                 }

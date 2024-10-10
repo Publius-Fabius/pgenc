@@ -25,9 +25,9 @@ struct pgc_buf *pgc_buf_lens(
         struct pgc_buf *src,
         const size_t nbytes)
 {
-        PGC_ASSERT(src->begin <= src->offset);
-        PGC_ASSERT(src->offset <= src->end);
-        PGC_ASSERT(nbytes <= src->end - src->offset)
+        SEL_ASSERT(src->begin <= src->offset);
+        SEL_ASSERT(src->offset <= src->end);
+        SEL_ASSERT(nbytes <= src->end - src->offset)
         buf->addr = (uint8_t*)src->addr + (src->offset - src->begin);
         buf->max = nbytes;
         buf->end = nbytes;
@@ -51,7 +51,7 @@ size_t pgc_buf_tell(struct pgc_buf *buf)
         return buf->offset;
 }
 
-enum pgc_err pgc_buf_seek(struct pgc_buf *buf, const size_t offset)
+sel_err_t pgc_buf_seek(struct pgc_buf *buf, const size_t offset)
 {
         if((offset < buf->begin) || (buf->end < offset)) {
                 return PGC_ERR_OOB;
@@ -80,7 +80,7 @@ static void pgc_buf_backcopy(struct pgc_buf *buf)
         if(BUF->max < ((NEW_END) - BUF->begin)) { \
                 pgc_buf_backcopy(BUF); }
 
-enum pgc_err pgc_buf_put(struct pgc_buf *b, void *src, const size_t nb)
+sel_err_t pgc_buf_put(struct pgc_buf *b, void *src, const size_t nb)
 {
         const size_t new_end = b->end + nb;
         /* NOTE: PGC_BUF_ENSURE can modify b->begin */
@@ -90,7 +90,7 @@ enum pgc_err pgc_buf_put(struct pgc_buf *b, void *src, const size_t nb)
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_get(
+sel_err_t pgc_buf_get(
         struct pgc_buf *b, 
         void *dest, 
         const size_t nb)
@@ -106,9 +106,9 @@ enum pgc_err pgc_buf_get(
         }
 }
 
-enum pgc_err pgc_buf_cmp(
+sel_err_t pgc_buf_cmp(
         struct pgc_buf *b, 
-        void *str, 
+        const void *str, 
         const size_t nb)
 {
         const size_t new_offset = b->offset + nb;
@@ -123,10 +123,10 @@ enum pgc_err pgc_buf_cmp(
         }   
 }
 
-enum pgc_err pgc_buf_match(
+sel_err_t pgc_buf_match(
         struct pgc_buf *b, 
-        int (*pred)(void *st, const int c), 
-        void *st)
+        int (*pred)(const void *st, const uint8_t c), 
+        const void *st)
 {
         const size_t new_offset = b->offset + 1;
         uint8_t *c = ((uint8_t*)b->addr) + (b->offset - b->begin);
@@ -188,10 +188,10 @@ static uint32_t decode_utf8(
         End decode_utf8 section.  Thanks Bjoern!
 */
 
-enum pgc_err pgc_buf_matchutf8(
+sel_err_t pgc_buf_matchutf8(
         struct pgc_buf *b,
-        int (*pred)(void *st, const uint32_t c), 
-        void *st)
+        int (*pred)(const void *st, const uint32_t c), 
+        const void *st)
 {
         uint8_t *addr = ((uint8_t*)b->addr) + (b->offset - b->begin);
         uint32_t utf_state = UTF8_ACCEPT;
@@ -213,31 +213,31 @@ enum pgc_err pgc_buf_matchutf8(
                         return PGC_ERR_ENC;
                 } 
         }
-        return PGC_ABORT();
+        return SEL_ABORT();
 }
 
-enum pgc_err pgc_buf_scan(
+sel_err_t pgc_buf_scan(
         struct pgc_buf *buf,
         void *bytes,
         const size_t nbytes)
 {
         for(;;) {
                 size_t beg = pgc_buf_tell(buf);
-                enum pgc_err err = pgc_buf_cmp(buf, bytes, nbytes);
+                sel_err_t err = pgc_buf_cmp(buf, bytes, nbytes);
                 switch(err) {
                         case PGC_ERR_OK:
                                 return PGC_ERR_OK;
                         case PGC_ERR_CMP: 
-                                PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg + 1));
+                                SEL_TRY_QUIETLY(pgc_buf_seek(buf, beg + 1));
                                 break;
                         default: 
-                                PGC_TRY_QUIETLY(pgc_buf_seek(buf, beg));
+                                SEL_TRY_QUIETLY(pgc_buf_seek(buf, beg));
                                 return err;
                 }
         }
 }
 
-enum pgc_err pgc_buf_read(struct pgc_buf *b, int fd, const size_t nb)
+sel_err_t pgc_buf_read(struct pgc_buf *b, int fd, const size_t nb)
 {
         const size_t new_end = b->end + nb;
         /* NOTE: PGC_BUF_ENSURE can modify b->begin */
@@ -254,7 +254,7 @@ enum pgc_err pgc_buf_read(struct pgc_buf *b, int fd, const size_t nb)
         }
 }
 
-enum pgc_err pgc_buf_sread(
+sel_err_t pgc_buf_sread(
         struct pgc_buf *b, 
         SSL *ssl, 
         const size_t nbytes, 
@@ -276,7 +276,7 @@ enum pgc_err pgc_buf_sread(
         }        
 }
 
-enum pgc_err pgc_buf_fread(
+sel_err_t pgc_buf_fread(
         struct pgc_buf *b, 
         FILE *file, 
         const size_t nb)
@@ -296,7 +296,7 @@ enum pgc_err pgc_buf_fread(
         }
 }
 
-enum pgc_err pgc_buf_write(
+sel_err_t pgc_buf_write(
         struct pgc_buf *b, 
         int fd, 
         const size_t nb)
@@ -315,7 +315,7 @@ enum pgc_err pgc_buf_write(
         }
 }
 
-enum pgc_err pgc_buf_swrite(
+sel_err_t pgc_buf_swrite(
         struct pgc_buf *b, 
         SSL *ssl, 
         const size_t nbytes,
@@ -336,7 +336,7 @@ enum pgc_err pgc_buf_swrite(
         }
 }
 
-enum pgc_err pgc_buf_fwrite(
+sel_err_t pgc_buf_fwrite(
         struct pgc_buf *b, 
         FILE *file, 
         const size_t nb)
@@ -355,7 +355,7 @@ enum pgc_err pgc_buf_fwrite(
         }
 }
 
-enum pgc_err pgc_buf_printf(
+sel_err_t pgc_buf_printf(
         struct pgc_buf *buf,
         const char *format,
         ...)
@@ -365,7 +365,7 @@ enum pgc_err pgc_buf_printf(
         return pgc_buf_vprintf(buf, format, ap);
 }
 
-enum pgc_err pgc_buf_vprintf(
+sel_err_t pgc_buf_vprintf(
         struct pgc_buf *b,
         const char *format,
         va_list ap)
@@ -393,7 +393,7 @@ enum pgc_err pgc_buf_vprintf(
         }
 }
 
-enum pgc_err pgc_buf_getchar(
+sel_err_t pgc_buf_getchar(
         struct pgc_buf *buf, 
         char *result)
 {
@@ -407,7 +407,7 @@ enum pgc_err pgc_buf_getchar(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_getutf8(
+sel_err_t pgc_buf_getutf8(
         struct pgc_buf *b,
         uint32_t *result)
 {
@@ -428,10 +428,10 @@ enum pgc_err pgc_buf_getutf8(
                         return PGC_ERR_ENC;
                 } 
         }
-        return PGC_ABORT();
+        return SEL_ABORT();
 }
 
-enum pgc_err pgc_buf_encode(
+sel_err_t pgc_buf_encode(
         struct pgc_buf *buf,
         const size_t base,
         void *value,
@@ -450,12 +450,12 @@ enum pgc_err pgc_buf_encode(
                 /* Get numeric representation of the next "digit."" */
                 notzero = next(base, value, &digit);
                 /* Lookup the "digit's" symbol and store it. */
-                PGC_TRY_QUIETLY(dict(digit, addr + len++));
+                SEL_TRY_QUIETLY(dict(digit, addr + len++));
         } while(notzero); 
 
         if(!len) {
                 /* Something went wrong. */
-                PGC_ABORT();
+                SEL_ABORT();
         }
 
         /* Reverse the encoded string's ordering. */
@@ -469,7 +469,7 @@ enum pgc_err pgc_buf_encode(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_encode_dec(const uint8_t digit, uint8_t *symbol)
+sel_err_t pgc_buf_encode_dec(const uint8_t digit, uint8_t *symbol)
 {
         if(0 <= digit && digit <= 9) {
                  *symbol = '0' + digit;
@@ -478,7 +478,7 @@ enum pgc_err pgc_buf_encode_dec(const uint8_t digit, uint8_t *symbol)
         return PGC_ERR_ENC;
 }
 
-enum pgc_err pgc_buf_encode_hex(const uint8_t digit, uint8_t *symbol)
+sel_err_t pgc_buf_encode_hex(const uint8_t digit, uint8_t *symbol)
 {
         if(0 <= digit && digit <= 9) {
                  *symbol = '0' + digit;
@@ -526,7 +526,7 @@ int pgc_buf_encode_uint64(const size_t base, void *value, uint8_t *digit)
         return *typed_value != 0;
 }
 
-enum pgc_err pgc_buf_decode(
+sel_err_t pgc_buf_decode(
         struct pgc_buf *buf,
         const size_t len,
         const size_t base,
@@ -543,14 +543,14 @@ enum pgc_err pgc_buf_decode(
         uint8_t *addr = ((uint8_t*)buf->addr) + (offset - begin);
         for(size_t n = 0; n < len; ++n) {
                 uint8_t value;
-                PGC_TRY_QUIETLY(dict(addr[n], &value));
-                PGC_TRY_QUIETLY(accum(base, value, result));
+                SEL_TRY_QUIETLY(dict(addr[n], &value));
+                SEL_TRY_QUIETLY(accum(base, value, result));
         }
         buf->offset += len;
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_decode_dec(const uint8_t symbol, uint8_t *value)
+sel_err_t pgc_buf_decode_dec(const uint8_t symbol, uint8_t *value)
 {
         if('0' <= symbol && symbol <= '9') {
                 *value = symbol - '0';
@@ -560,7 +560,7 @@ enum pgc_err pgc_buf_decode_dec(const uint8_t symbol, uint8_t *value)
         }
 }
 
-enum pgc_err pgc_buf_decode_hex(const uint8_t symbol, uint8_t *value)
+sel_err_t pgc_buf_decode_hex(const uint8_t symbol, uint8_t *value)
 {
         const uint8_t c = (uint8_t)tolower(symbol);
         if('0' <= c && c <= '9') {
@@ -574,7 +574,7 @@ enum pgc_err pgc_buf_decode_hex(const uint8_t symbol, uint8_t *value)
         }
 }
 
-enum pgc_err pgc_buf_decode_uint8(
+sel_err_t pgc_buf_decode_uint8(
         const size_t base, 
         const uint8_t value, 
         void *result)
@@ -585,7 +585,7 @@ enum pgc_err pgc_buf_decode_uint8(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_decode_uint16(
+sel_err_t pgc_buf_decode_uint16(
         const size_t base, 
         const uint8_t value, 
         void *result)
@@ -596,7 +596,7 @@ enum pgc_err pgc_buf_decode_uint16(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_decode_uint32(
+sel_err_t pgc_buf_decode_uint32(
         const size_t base, 
         const uint8_t value, 
         void *result)
@@ -607,7 +607,7 @@ enum pgc_err pgc_buf_decode_uint32(
         return PGC_ERR_OK;
 }
 
-enum pgc_err pgc_buf_decode_uint64(
+sel_err_t pgc_buf_decode_uint64(
         const size_t base, 
         const uint8_t value, 
         void *result)

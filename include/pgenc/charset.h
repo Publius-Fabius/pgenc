@@ -5,17 +5,19 @@
 #include <stdint.h>
 
 /** A 256bit character set used for efficient string parsing. */
-struct pgc_cset 
-{
+struct pgc_cset {
         uint32_t words[8];                      /** Bits */
 };
+
+/** Type for predicate functions defined in ctype.h. */
+typedef int (*pgc_cset_pred_t)(const uint8_t value);
 
 /**
  * Initialize the set to zero.
  * @param set The set to make zero.
  * @return set
  **/
-extern struct pgc_cset *pgc_cset_zero(struct pgc_cset *set);
+struct pgc_cset *pgc_cset_zero(struct pgc_cset *set);
 
 /**
  * Copy all bits from src to dest.
@@ -23,7 +25,7 @@ extern struct pgc_cset *pgc_cset_zero(struct pgc_cset *set);
  * @param src The source set.
  * @return dest
  **/
-extern struct pgc_cset *pgc_cset_cpy(
+struct pgc_cset *pgc_cset_cpy(
         struct pgc_cset *dest, 
         struct pgc_cset *src);
 
@@ -33,7 +35,7 @@ extern struct pgc_cset *pgc_cset_cpy(
  * @param ele The element that may be a member of the set.
  * @return A value other than zero indicates 'ele' is in 'set'.
  **/
-extern int pgc_cset_in(struct pgc_cset *set,  const int ele);
+int pgc_cset_in(const struct pgc_cset *set, const uint8_t ele);
 
 /**
  * Add an element to the character set.
@@ -41,9 +43,9 @@ extern int pgc_cset_in(struct pgc_cset *set,  const int ele);
  * @param element The character we want to include in the set.
  * @return set.
  **/
-extern struct pgc_cset *pgc_cset_set(
+struct pgc_cset *pgc_cset_set(
         struct pgc_cset *set, 
-        const int element);
+        const uint8_t element);
 
 /**
  * Remove an element from the character set.
@@ -51,12 +53,9 @@ extern struct pgc_cset *pgc_cset_set(
  * @param ele The character to exclude from the set.
  * @return set
  **/
-extern struct pgc_cset *pgc_cset_unset(
+struct pgc_cset *pgc_cset_unset(
         struct pgc_cset *set, 
-        const int ele);
-
-/** Type for predicate functions defined in ctype.h. */
-typedef int (*pgc_cset_pred_t)(int value);
+        const uint8_t ele);
 
 /**
  * Construct a set that is isomorphic to the predicate.
@@ -64,7 +63,7 @@ typedef int (*pgc_cset_pred_t)(int value);
  * @param pred The predicate.
  * @return dest
  **/
-extern struct pgc_cset *pgc_cset_iso(
+struct pgc_cset *pgc_cset_iso(
         struct pgc_cset *dest,
         pgc_cset_pred_t pred);
 
@@ -75,7 +74,7 @@ extern struct pgc_cset *pgc_cset_iso(
  * @param second The second set.
  * @return dest
  **/
-extern struct pgc_cset *pgc_cset_isect(
+struct pgc_cset *pgc_cset_isect(
         struct pgc_cset *dest, 
         struct pgc_cset *first, 
         struct pgc_cset *second);
@@ -87,7 +86,7 @@ extern struct pgc_cset *pgc_cset_isect(
  * @param second The second set.
  * @return dest
  **/
-extern struct pgc_cset *pgc_cset_union(
+struct pgc_cset *pgc_cset_union(
         struct pgc_cset *dest,
         struct pgc_cset *first, 
         struct pgc_cset *second);
@@ -100,9 +99,69 @@ extern struct pgc_cset *pgc_cset_union(
  * @param second The second set.
  * @return dest
  **/
-extern struct pgc_cset *pgc_cset_diff(
+struct pgc_cset *pgc_cset_diff(
         struct pgc_cset *dest,
         struct pgc_cset *first, 
         struct pgc_cset *second);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isalnum(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isalpha(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isblank(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_iscntrl(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isdigit(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isgraph(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_islower(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isprint(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_ispunct(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isspace(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isupper(const uint8_t c);
+
+/**
+ * Wrapper for a ctype.h classifier.
+ */
+int pgc_cset_isxdigit(const uint8_t c);
 
 #endif

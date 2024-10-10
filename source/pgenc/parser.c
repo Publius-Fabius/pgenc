@@ -1,132 +1,27 @@
 
 #include "pgenc/parser.h"
 #include <string.h>
-#include <assert.h>
 
-struct pgc_par *pgc_par_cmp(
-        struct pgc_par *par,
-        char *str, 
-        const size_t len)
+static int pgc_par_run_byte_match(const void *ptr, const uint8_t c)
 {
-        par->tag = PGC_PAR_CMP;
-        par->u.str.val = str;
-        par->u.str.len = len;
-        return par;
+        return *((const int*)ptr) == c;
 }
 
-struct pgc_par *pgc_par_byte(
-        struct pgc_par *par,
-        const int byte)
-{
-        par->tag = PGC_PAR_BYTE;
-        par->u.byte = byte;
-        return par;
-}
-
-struct pgc_par *pgc_par_utf8(
-        struct pgc_par *par,
-        const uint32_t min,
-        const uint32_t max)
-{
-        par->tag = PGC_PAR_UTF8;
-        par->u.trip.min = min;
-        par->u.trip.max = max;
-        return par;
-}
-
-struct pgc_par *pgc_par_set(
-        struct pgc_par *par,
-        struct pgc_cset *set)
-{
-        par->tag = PGC_PAR_SET;
-        par->u.set = set;
-        return par;
-}
-
-struct pgc_par *pgc_par_and(
-        struct pgc_par *par,
-        struct pgc_par *fst,
-        struct pgc_par *snd)
-{
-        par->tag = PGC_PAR_AND;
-        par->u.pair.arg1 = fst;
-        par->u.pair.arg2 = snd;
-        return par;
-}
-
-struct pgc_par *pgc_par_or(
-        struct pgc_par *par,
-        struct pgc_par *inl,
-        struct pgc_par *inr)
-{
-        par->tag = PGC_PAR_OR;
-        par->u.pair.arg1 = inl;
-        par->u.pair.arg2 = inr;
-        return par;
-}
-
-struct pgc_par *pgc_par_rep(
-        struct pgc_par *par,
-        struct pgc_par *sub,
-        const uint32_t min,
-        const uint32_t max)
-{
-        par->tag = PGC_PAR_REP;
-        par->u.trip.sub = sub;
-        par->u.trip.min = min;
-        par->u.trip.max = max;
-        return par;
-}
-
-struct pgc_par *pgc_par_hook(
-        struct pgc_par *par,
-        pgc_par_hook_t callback)
-{
-        par->tag = PGC_PAR_HOOK;
-        par->u.hook = callback;
-        return par;
-}
-
-struct pgc_par *pgc_par_lnk(
-        struct pgc_par *par,
-        struct pgc_par *lnk)
-{
-        par->tag = PGC_PAR_LNK;
-        par->u.lnk = lnk;
-        return par;
-}
-
-struct pgc_par *pgc_par_call(
-        struct pgc_par *par,
-        pgc_par_call_t callback,
-        struct pgc_par *var)
-{
-        par->tag = PGC_PAR_CALL;
-        par->u.call.fun = callback;
-        par->u.call.var = var;
-        return par;
-}
-
-static int pgc_par_run_byte_match(void *ptr, const int c)
-{
-        return *(char*)ptr == c;
-}
-
-static enum pgc_err pgc_par_run_byte(
-        struct pgc_par *par, 
+static sel_err_t pgc_par_run_byte(
+        const struct pgc_par *par, 
         struct pgc_buf *buf)
 {
         return pgc_buf_match(buf, pgc_par_run_byte_match, &par->u.byte);
 }
 
-static int pgc_par_run_utf8_match(void *ptr, const uint32_t c)
+static int pgc_par_run_utf8_match(const void *ptr, const uint32_t c)
 {
-        uint32_t *range = (uint32_t*)ptr;
+        const uint32_t *range = (const uint32_t*)ptr;
         return range[0] <= c && c <= range[1];
 }
 
-static enum pgc_err pgc_par_run_utf8(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_utf8(
+        const struct pgc_par *par,
         struct pgc_buf *buf)
 {
         uint32_t range[2];
@@ -135,33 +30,33 @@ static enum pgc_err pgc_par_run_utf8(
         return pgc_buf_matchutf8(buf, pgc_par_run_utf8_match, range);
 }
 
-static int pgc_par_run_set_match(void *set, const int c) 
+static int pgc_par_run_set_match(const void *set, const uint8_t c) 
 {
         return pgc_cset_in(set, c);
 }
 
-static enum pgc_err pgc_par_run_set(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_set(
+        const struct pgc_par *par,
         struct pgc_buf *buf)
 {
         return pgc_buf_match(buf, pgc_par_run_set_match, par->u.set);
 }
 
-static enum pgc_err pgc_par_run_cmp(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_cmp(
+        const struct pgc_par *par,
         struct pgc_buf *buf)
 {
         return pgc_buf_cmp(buf, par->u.str.val, par->u.str.len);
 }
 
-static enum pgc_err pgc_par_run_and(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_and(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
         do {
                 /* Perform parse of arg1. */
-                const enum pgc_err err = pgc_par_run(
+                const sel_err_t err = pgc_par_run(
                         par->u.pair.arg1, 
                         buf, 
                         state);
@@ -174,16 +69,14 @@ static enum pgc_err pgc_par_run_and(
                         par = par->u.pair.arg2;
                 }
 
-                /* When arg2 is a product, associative laws allow for a short
-                   jump here. */
         } while(par->tag == PGC_PAR_AND);
 
         /* Iterator fell through type check, return last parse. */
         return pgc_par_run(par, buf, state);
 }
 
-static enum pgc_err pgc_par_run_or(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_or(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
@@ -192,7 +85,7 @@ static enum pgc_err pgc_par_run_or(
                 const size_t buf_offset = pgc_buf_tell(buf);
 
                 /* Perform the parse of arg1. */
-                const enum pgc_err err = pgc_par_run(
+                const sel_err_t err = pgc_par_run(
                         par->u.pair.arg1, 
                         buf, 
                         state);
@@ -208,25 +101,23 @@ static enum pgc_err pgc_par_run_or(
                         return err;
                 }
 
-                /* When arg2 is a coproduct, the associative laws allow
-                   for a short jump here. */
         } while(par->tag == PGC_PAR_OR);
 
         /* Iterator fell through, offset is restored and ready to go. */
         return pgc_par_run(par, buf, state);
 }
 
-static enum pgc_err pgc_par_run_rep(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_rep(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
         const uint32_t min = par->u.trip.min;           /** Min reps */
         const uint32_t max = par->u.trip.max;           /** Max reps */
-        struct pgc_par *sub = par->u.trip.sub;          /** Sub-parser */
+        const struct pgc_par *sub = par->u.trip.sub;    /** Sub-parser */
 
         /* Values for min and max need to make sense. */
-        assert((0 <= min) && (min <= max));
+        SEL_ASSERT((0 <= min) && (min <= max));
         
         /* Copy the current state. */
         size_t buf_offset = pgc_buf_tell(buf);
@@ -235,7 +126,7 @@ static enum pgc_err pgc_par_run_rep(
         for(int n = 1; ; ++n) {
 
                 /* Perform the parse of the sub-parser. */
-                const enum pgc_err err = pgc_par_run(sub, buf, state);
+                const sel_err_t err = pgc_par_run(sub, buf, state);
 
                 if(err == PGC_ERR_OK) {
                         if(n >= max) {
@@ -258,39 +149,39 @@ static enum pgc_err pgc_par_run_rep(
                         return PGC_ERR_OK;
                 }
         }
-        return PGC_ABORT();
+        return SEL_ABORT();
 }
 
-static enum pgc_err pgc_par_run_hook(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_hook(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
         return par->u.hook(buf, state);
 }
 
-static enum pgc_err pgc_par_run_call(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_call(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
         return par->u.call.fun(buf, state, par->u.call.var);
 }
 
-static enum pgc_err pgc_par_run_lnk(
-        struct pgc_par *par,
+static sel_err_t pgc_par_run_lnk(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
         return pgc_par_run(par->u.lnk, buf, state);
 }
 
-enum pgc_err pgc_par_run(
-        struct pgc_par *par,
+sel_err_t pgc_par_run(
+        const struct pgc_par *par,
         struct pgc_buf *buf,
         void *state)
 {
-        assert(par);
+        SEL_ASSERT(par);
         switch(par->tag) {
                 case PGC_PAR_BYTE: 
                         return pgc_par_run_byte(par, buf);
@@ -312,19 +203,20 @@ enum pgc_err pgc_par_run(
                         return pgc_par_run_call(par, buf, state);
                 case PGC_PAR_LNK: 
                         return pgc_par_run_lnk(par, buf, state);
-                default: return PGC_ABORT();
+                default: 
+                        return SEL_ABORT();
         };
 }
 
 ssize_t pgc_par_runs(
-        struct pgc_par *par,
+        const struct pgc_par *par,
         char *str,
         void *st)
 {
         const size_t len = strlen(str);
         struct pgc_buf buf; pgc_buf_init(&buf, str, strlen(str), 0);
         buf.end = len;
-        enum pgc_err e = pgc_par_run(par, &buf, st);
+        sel_err_t e = pgc_par_run(par, &buf, st);
         if(e == PGC_ERR_OK) {
                 return (ssize_t)pgc_buf_tell(&buf);
         } else {

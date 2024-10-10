@@ -3,20 +3,22 @@
 
 #include "pgenc/parser.h"
 
-/** Dictionary for self-parsing syntax */
-struct pgc_self;
+// /** Dictionary for self-parsing syntax */
+// struct pgc_self;
 
-/** 
- * Get the pgc_self dictionary. 
- * @return the dictionary
- */
-struct pgc_self *export_pgc_self();
+// /** 
+//  * Get the pgc_self dictionary. 
+//  * @return the dictionary
+//  */
+// struct pgc_self *export_pgc_self();
 
-/** 
- * Get 'src' parser definition from the dictionary.
- * @param dict The pgc_self dictionary.
- * @return the 'src' parser
- */
-struct pgc_par *pgc_self_src(struct pgc_self *dict);
+// /** 
+//  * Get 'src' parser definition from the dictionary.
+//  * @param dict The pgc_self dictionary.
+//  * @return the 'src' parser
+//  */
+// struct pgc_par *pgc_self_src(struct pgc_self *dict);
+
+extern const struct pgc_par pgc_self_src;
 
 #endif

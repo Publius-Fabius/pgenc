@@ -9,19 +9,18 @@
 struct pgc_par;
 
 /** Function pointer for parser hooks. */
-typedef enum pgc_err (*pgc_par_hook_t)(
+typedef sel_err_t (*pgc_par_hook_t)(
         struct pgc_buf *buffer,
         void *state);
 
 /** Function pointer for custom parser calls. */
-typedef enum pgc_err (*pgc_par_call_t)(
+typedef sel_err_t (*pgc_par_call_t)(
         struct pgc_buf *buffer,
         void *state,
-        struct pgc_par *var);
+        const struct pgc_par *var);
 
 /** Parser type discriminator */
-enum pgc_par_tag 
-{
+enum pgc_par_tag {
         PGC_PAR_CMP,                            /** Comparison Parser */
         PGC_PAR_UTF8,                           /** UTF8 Parser */
         PGC_PAR_BYTE,                           /** Byte Parser */
@@ -37,31 +36,31 @@ enum pgc_par_tag
 /** Parser */
 struct pgc_par 
 {
-        enum pgc_par_tag tag;                   /** Discriminator */
+        const enum pgc_par_tag tag;
         union 
         {
                 struct {
-                        struct pgc_par *arg1;   /** First argument */
-                        struct pgc_par *arg2;   /** Second argument */
-                } pair;
+                        const struct pgc_par *const arg1;
+                        const struct pgc_par *const arg2;
+                } const pair;
                 struct {
-                        struct pgc_par *sub;    /** Sub-parser */
-                        uint32_t min;           /** Minimum repetitions */
-                        uint32_t max;           /** Maximum repetitions */
-                } trip;
+                        const struct pgc_par *const sub;
+                        const uint32_t min;
+                        const uint32_t max;
+                } const trip;
                 struct {
-                        char *val;              /** String Literal */
-                        size_t len;             /** String Length */
-                } str;
+                        const char *const val;
+                        const size_t len;
+                } const str;
                 struct {
-                        pgc_par_call_t fun;     /** Call function */
-                        struct pgc_par *var;    /** Call variable */
-                } call;
-                struct pgc_par *lnk;            /** Link */
-                pgc_par_hook_t hook;            /** Hook function */
-                struct pgc_cset *set;           /** Charset */
-                int byte;                       /** Byte */
-        } u;
+                        const pgc_par_call_t fun;
+                        const struct pgc_par *const var;
+                } const call;
+                const struct pgc_par *const lnk;
+                const pgc_par_hook_t hook;
+                const struct pgc_cset *const set;
+                const int byte;
+        } const u;
 };
 
 /** 
@@ -70,123 +69,104 @@ struct pgc_par
  * new memory, so the string must be available when the parser runs.
  * This parser does not compare against the trailing 'zero' character
  * if it exists.
- * @param par The parser to initialize.
- * @param str The string to compare against.
- * @param len The number of characters to compare.
- * @return par
+ * @param STR The string to compare against.
+ * @param LEN The number of characters to compare.
  */
-struct pgc_par *pgc_par_cmp(
-        struct pgc_par *par,
-        char *str, 
-        const size_t len);
+#define PGC_PAR_CMP(STR, LEN) { \
+        .tag = PGC_PAR_CMP, \
+        .u.str.val = STR, \
+        .u.str.len = LEN }
 
 /** 
  * Initialize a char parser that succeeds when the next character matches 
  * the given octet.
- * @param par The parser to initialize.
- * @param oct The octet to match input against.
- * @return par
+ * @param OCTET The octet to match input against.
  */
-struct pgc_par *pgc_par_byte(
-        struct pgc_par *par,
-        const int byte);
+#define PGC_PAR_BYTE(OCTET) { \
+        .tag = PGC_PAR_BYTE, \
+        .u.byte = OCTET }
 
 /** 
  * Initialize a UTF8 parser that succeeds when a UTF8 value within the 
  * specified interval is parsed. 
- * @param par The parser to initialize.
- * @param min The minimum UTF8 value.
- * @param max The maximum UTF8 value.
- * @return par
+ * @param MIN The minimum UTF8 value.
+ * @param MAX The maximum UTF8 value.
  */
-struct pgc_par *pgc_par_utf8(
-        struct pgc_par *par,
-        const uint32_t min,
-        const uint32_t max);
+#define PGC_PAR_UTF8(MIN, MAX) { \
+        .tag = PGC_PAR_UTF8, \
+        .u.trip.min = MIN, \
+        .u.trip.max = MAX }
 
 /**
  * Initialize a set membership parser that succeeds when the next character 
  * is a member of the given set.  This function does not allocate any new
  * memory.
- * @param par The parser to initialize.
- * @param set The character set.
- * @return par
+ * @param SET The character set.
  */
-struct pgc_par *pgc_par_set(
-        struct pgc_par *par,
-        struct pgc_cset *set);
+#define PGC_PAR_SET(SET) { \
+        .tag = PGC_PAR_SET, \
+        .u.set = SET }
 
 /**
  * Initialize a product parser that succeeds when both of its sub-parsers
  * succeed.
- * @param par The parser to initialize.
- * @param fst The first projection.
- * @param snd The second projection.
- * @return par
+ * @param ARG1 The first argument.
+ * @param ARG2 The second argument.
  */
-struct pgc_par *pgc_par_and(
-        struct pgc_par *par,
-        struct pgc_par *fst,
-        struct pgc_par *snd);
+#define PGC_PAR_AND(ARG1, ARG2) { \
+        .tag = PGC_PAR_AND, \
+        .u.pair.arg1 = ARG1, \
+        .u.pair.arg2 = ARG2 }
 
 /**
  * Initialize a choice parser that succeeds when one of the sub-parsers
  * succeeds.
- * @param par The parser to initialize.
- * @param inl The left injection.
- * @param inr The right injection.
- * @return par
+ * @param ARG1 The first argument.
+ * @param ARG2 The second argument.
  */
-struct pgc_par *pgc_par_or(
-        struct pgc_par *par,
-        struct pgc_par *inl,
-        struct pgc_par *inr);
+#define PGC_PAR_OR(ARG1, ARG2) { \
+        .tag = PGC_PAR_OR, \
+        .u.pair.arg1 = ARG1, \
+        .u.pair.arg2 = ARG2 }
 
 /**
  * Initialize a repetition parser that succeeds when the given child parser 
  * succeeds within a bounded number of repetitions.
- * @param par The parser to initialize.
- * @param sub The sub-parser.
- * @param min The minimum number of repetitions.
- * @param max The maximum number of repetitions.
- * @return par
+ * @param SUB The sub-parser.
+ * @param MIN The minimum number of repetitions.
+ * @param MAX The maximum number of repetitions.
  **/
-struct pgc_par *pgc_par_rep(
-        struct pgc_par *par,
-        struct pgc_par *sub,
-        const uint32_t min,
-        const uint32_t max);
+#define PGC_PAR_REP(SUB, MIN, MAX) { \
+        .tag = PGC_PAR_REP, \
+        .u.trip.sub = SUB, \
+        .u.trip.min = MIN, \
+        .u.trip.max = MAX }
 
 /**
  * Initialize a hook parser that calls the given function.
- * @param parser The parser to initialize.
  * @param callback The function to call when the parser runs.
- * @return parser
  */
-struct pgc_par *pgc_par_hook(
-        struct pgc_par *par,
-        pgc_par_hook_t callback);
+#define PGC_PAR_HOOK(CALLBACK) { \
+        .tag = PGC_PAR_HOOK, \
+        .u.hook = CALLBACK }
 
 /**
  * Initialize a call parser that calls the given function with an argument.
- * @param parser The parser to initialize.
- * @param callback The function to call when the parser runs.
- * @return parser
+ * @param FUN The function to call when the parser runs.
+ * @param VAR The parser argument
  */
-struct pgc_par *pgc_par_call(
-        struct pgc_par *par,
-        pgc_par_call_t callback,
-        struct pgc_par *var);
+#define PGC_PAR_CALL(FUN, VAR) { \
+        .tag = PGC_PAR_CALL, \
+        .u.call.fun = FUN, \
+        .u.call.var = VAR }
 
 /**
  * Initialize a link parser that simply runs the parser it points to.
- * @param parser The parser to initialize.
  * @param lnk The parser the parser will link to.
- * @return parser
  */
-struct pgc_par *pgc_par_lnk(
-        struct pgc_par *par,
-        struct pgc_par *lnk);
+#define PGC_PAR_LNK(LNK) { \
+        .tag = PGC_PAR_LNK, \
+        .u.lnk = LNK }
 
 /** 
  * Run a parser by taking a character buffer and a state.
@@ -195,8 +175,8 @@ struct pgc_par *pgc_par_lnk(
  * @param state The parser's user defined state.
  * @return A negative error code on failure, otherwise PGC_ERR_OK.
  */
-enum pgc_err pgc_par_run(
-        struct pgc_par *parser, 
+sel_err_t pgc_par_run(
+        const struct pgc_par *parser, 
         struct pgc_buf *buffer, 
         void *state);
 
@@ -209,17 +189,8 @@ enum pgc_err pgc_par_run(
  * parsed.  A negative value corresponds to a PGC_ERR_X code.
  */
 ssize_t pgc_par_runs(
-        struct pgc_par *parser,
+        const struct pgc_par *parser,
         char *str,
-        void *state);
-
-/**
- * Scan the buffer until the parser is successful.  Return the offset to
- * the beginning of the parsed sequence.
- */
-ssize_t pgc_par_scan(
-        struct pgc_par *parser,
-        struct pgc_buf *buffer,
         void *state);
 
 #endif

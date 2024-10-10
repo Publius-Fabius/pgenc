@@ -78,7 +78,7 @@ size_t pgc_buf_tell(struct pgc_buf *buffer);
  *      PGC_ERR_OK - All ok.
  *      PGC_ERR_OOB - Argument is not in storable memory.
  */
-enum pgc_err pgc_buf_seek(
+sel_err_t pgc_buf_seek(
         struct pgc_buf *buffer, 
         const size_t offset);
 
@@ -91,7 +91,7 @@ enum pgc_err pgc_buf_seek(
  *      PGC_ERR_OK      - All ok.
  *      PGC_ERR_OOB     - Operation would result in buffer overflow.
  **/
-enum pgc_err pgc_buf_put(
+sel_err_t pgc_buf_put(
         struct pgc_buf *buffer, 
         void *source, 
         const size_t nbytes);
@@ -106,7 +106,7 @@ enum pgc_err pgc_buf_put(
  *      PGC_ERR_OK      - All ok.
  *      PGC_ERR_OOB     - Attempt to read past available data.
  **/
-enum pgc_err pgc_buf_get(
+sel_err_t pgc_buf_get(
         struct pgc_buf *buffer, 
         void *dest, 
         const size_t nbytes);
@@ -122,9 +122,9 @@ enum pgc_err pgc_buf_get(
  *      PGC_ERR_CMP     - Comparison operation failed.
  *      PGC_ERR_OOB     - Attempt to read past available data.
  **/
-enum pgc_err pgc_buf_cmp(
+sel_err_t pgc_buf_cmp(
         struct pgc_buf *buffer, 
-        void *bytes, 
+        const void *bytes, 
         const size_t nbytes);
 
 /**
@@ -138,10 +138,10 @@ enum pgc_err pgc_buf_cmp(
  *      PGC_ERR_CMP     - The character didn't match the predicate.
  *      PGC_ERR_OOB     - Attempt to read past available data.
  */
-enum pgc_err pgc_buf_match(
+sel_err_t pgc_buf_match(
         struct pgc_buf *buffer, 
-        int (*pred)(void *state, const int value), 
-        void *state);
+        int (*pred)(const void *state, const uint8_t value), 
+        const void *state);
 
 /**
  * Decode and match UTF8 value.  Upon success, the offset is advanced
@@ -155,10 +155,10 @@ enum pgc_err pgc_buf_match(
  *      PGC_ERR_ENC     - Failed to decode the UTF8 value.
  *      PGC_ERR_OOB     - Attempt to read past available data.
  */
-enum pgc_err pgc_buf_matchutf8(
+sel_err_t pgc_buf_matchutf8(
         struct pgc_buf *buffer,
-        int (*pred)(void *state, const uint32_t value), 
-        void *state);
+        int (*pred)(const void *state, const uint32_t value), 
+        const void *state);
 
 /**
  * Scan the buffer for the sequence of bytes.  The buffer's offset will be 
@@ -169,7 +169,7 @@ enum pgc_err pgc_buf_matchutf8(
  * @return 
  *      PGC_ERR_OK      - Sequence found
  */
-enum pgc_err pgc_buf_scan(
+sel_err_t pgc_buf_scan(
         struct pgc_buf *buffer,
         void *bytes,
         const size_t nbytes);
@@ -185,9 +185,8 @@ enum pgc_err pgc_buf_scan(
  * PGC_ERR_OOB - Attempt to write past buffer.
  * PGC_ERR_EOF - The EOF was encountered.
  * PGC_ERR_SYS - System Error
- * PGC_ERR_WNT - Wants more time.
  */
-enum pgc_err pgc_buf_read(
+sel_err_t pgc_buf_read(
         struct pgc_buf *buffer, 
         int fd, 
         const size_t nbytes);
@@ -201,7 +200,7 @@ enum pgc_err pgc_buf_read(
  * PGC_ERR_EOF - The EOF was encountered.
  * PGC_ERR_SSL - SSL Error
  */
-enum pgc_err pgc_buf_sread(
+sel_err_t pgc_buf_sread(
         struct pgc_buf *buffer, 
         SSL *ssl, 
         const size_t nbytes,
@@ -219,7 +218,7 @@ enum pgc_err pgc_buf_sread(
  *      PGC_ERR_EOF     - The EOF was encountered.
  *      PGC_ERR_SYS     - System error (check errno).
  */
-enum pgc_err pgc_buf_fread(
+sel_err_t pgc_buf_fread(
         struct pgc_buf *buffer, 
         FILE *file, 
         const size_t nbytes);
@@ -233,9 +232,8 @@ enum pgc_err pgc_buf_fread(
  *      PGC_ERR_OK      - All ok.
  *      PGC_ERR_OOB     - Attempt to read past available data.
  *      PGC_ERR_SYS     - System Error
- *      PGC_ERR_WNT     - Wants more time
  */
-enum pgc_err pgc_buf_write(
+sel_err_t pgc_buf_write(
         struct pgc_buf *buffer, 
         int fd, 
         const size_t nbytes);
@@ -247,7 +245,7 @@ enum pgc_err pgc_buf_write(
  * PGC_ERR_OOB - Attempt to read past available data.
  * PGC_ERR_SSL - SSL Error
  */
-enum pgc_err pgc_buf_swrite(
+sel_err_t pgc_buf_swrite(
         struct pgc_buf *buffer, 
         SSL *ssl, 
         const size_t nbytes,
@@ -262,7 +260,7 @@ enum pgc_err pgc_buf_swrite(
  *      PGC_ERR_OOB     - Attempt to read past available data.
  *      PGC_ERR_SYS     - System error (check errno).
  */
-enum pgc_err pgc_buf_fwrite(
+sel_err_t pgc_buf_fwrite(
         struct pgc_buf *buffer, 
         FILE *file, 
         const size_t nbytes);
@@ -276,7 +274,7 @@ enum pgc_err pgc_buf_fwrite(
  *      PGC_ERR_OOB     - Attempt to write past storable memory.
  *      PGC_ERR_SYS     - System error (check errno).
  */
-enum pgc_err pgc_buf_printf(
+sel_err_t pgc_buf_printf(
         struct pgc_buf *buffer,
         const char *format,
         ...);
@@ -291,7 +289,7 @@ enum pgc_err pgc_buf_printf(
  *      PGC_ERR_OOB     - Attempt to write past storable memory.
  *      PGC_ERR_SYS     - System error (check errno).
  */
-enum pgc_err pgc_buf_vprintf(
+sel_err_t pgc_buf_vprintf(
         struct pgc_buf *buffer,
         const char *format,
         va_list args);
@@ -303,19 +301,19 @@ enum pgc_err pgc_buf_vprintf(
  * @return 
  * PGC_ERR_OOB: Attempt to read past end of buffer.
  */
-enum pgc_err pgc_buf_getchar(
+sel_err_t pgc_buf_getchar(
         struct pgc_buf *buffer, 
         char *result);
 
 /**
  * Read next UTF8 character.
  */
-enum pgc_err pgc_buf_getutf8(
+sel_err_t pgc_buf_getutf8(
         struct pgc_buf *buffer,
         uint32_t *result);
 
 /** Encode Dictionary */
-typedef enum pgc_err (*pgc_buf_encode_dict_t)(
+typedef sel_err_t (*pgc_buf_encode_dict_t)(
         const uint8_t digit,
         uint8_t *symbol);
 
@@ -336,15 +334,15 @@ typedef int (*pgc_buf_encode_iter_t)(
  *      PGC_ERR_OOB: Attempt to write past end of buffer.
  *      PGC_ERR_OK: All OKAY.
  */
-enum pgc_err pgc_buf_encode(
+sel_err_t pgc_buf_encode(
         struct pgc_buf *buffer,
         const size_t base,
         void *value,
         pgc_buf_encode_iter_t next,
         pgc_buf_encode_dict_t dict);
 
-enum pgc_err pgc_buf_encode_dec(const uint8_t digit, uint8_t *symbol);
-enum pgc_err pgc_buf_encode_hex(const uint8_t digit, uint8_t *symbol);
+sel_err_t pgc_buf_encode_dec(const uint8_t digit, uint8_t *symbol);
+sel_err_t pgc_buf_encode_hex(const uint8_t digit, uint8_t *symbol);
 int pgc_buf_encode_uint8(const size_t base, void *value, uint8_t *digit);
 int pgc_buf_encode_uint16(const size_t base, void *value, uint8_t *digit);
 int pgc_buf_encode_uint32(const size_t base, void *value, uint8_t *digit);
@@ -353,14 +351,14 @@ int pgc_buf_encode_uint64(const size_t base, void *value, uint8_t *digit);
 /**
  * Decode Dictionary
  */
-typedef enum pgc_err (pgc_buf_decode_dict_t)(
+typedef sel_err_t (pgc_buf_decode_dict_t)(
         const uint8_t symbol, 
         uint8_t *value);
 
 /** 
  * Decode Accumulator
  */
-typedef enum pgc_err (*pgc_buf_decode_accum_t)(
+typedef sel_err_t (*pgc_buf_decode_accum_t)(
         const size_t base, const uint8_t value, void *result);
 
 /**
@@ -376,7 +374,7 @@ typedef enum pgc_err (*pgc_buf_decode_accum_t)(
  *      PGC_ERR_ENC: Improperly encoded text (unexpected symbol).
  *      PGC_ERR_OK: All OKAY.
  */
-enum pgc_err pgc_buf_decode(
+sel_err_t pgc_buf_decode(
         struct pgc_buf *buf,
         const size_t len,
         const size_t base,
@@ -384,15 +382,15 @@ enum pgc_err pgc_buf_decode(
         pgc_buf_decode_accum_t accum,
         void *result);
 
-enum pgc_err pgc_buf_decode_dec(const uint8_t symbol, uint8_t *value);
-enum pgc_err pgc_buf_decode_hex(const uint8_t symbol, uint8_t *value);
-enum pgc_err pgc_buf_decode_uint8(
+sel_err_t pgc_buf_decode_dec(const uint8_t symbol, uint8_t *value);
+sel_err_t pgc_buf_decode_hex(const uint8_t symbol, uint8_t *value);
+sel_err_t pgc_buf_decode_uint8(
         const size_t base, const uint8_t value, void *result);
-enum pgc_err pgc_buf_decode_uint16(
+sel_err_t pgc_buf_decode_uint16(
         const size_t base, const uint8_t value, void *result);
-enum pgc_err pgc_buf_decode_uint32(
+sel_err_t pgc_buf_decode_uint32(
         const size_t base, const uint8_t value, void *result);
-enum pgc_err pgc_buf_decode_uint64(
+sel_err_t pgc_buf_decode_uint64(
         const size_t base, const uint8_t value, void *result);
 
 #endif
