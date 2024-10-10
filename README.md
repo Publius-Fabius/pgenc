@@ -1,6 +1,11 @@
 # pgenc - Parser Generator for C
 
-This project provides a robust option for generating highly optimized static parsers in standard C99.  Parsers are defined as a grammar in a language inspired by EBNF, but with several powerful extensions.  These grammar files can then be used to generate parsers in standard C that can be used for a variety of parsing applications.
+This project provides a robust option for generating highly optimized static 
+parsers in standard C99.  Parsers are defined as a grammar in a language 
+inspired by EBNF, but with several powerful extensions.  These grammar files 
+can then be used to generate text parsers in standard C.  PGENC is fully self 
+parsing and comes with its own definition defined in its own language 
+(see grammar/self.g).
 
 In a file named input.grammar:
 ```
@@ -28,7 +33,7 @@ Compile in the standard manner:
     gcc -o my_program my_code.c my_parsers.c
 ```
 
-Here's an example of the generated code:
+Here's an example of some generated code to parse the grammar itself:
 ```
 static const struct pgc_cset p0_p = { .words = { 0x3e00 , 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 } }; 
 const struct pgc_par pgc_self_wsc = PGC_PAR_SET(&p0_p); 
