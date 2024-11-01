@@ -4,6 +4,7 @@
 #include "pgenc/error.h"
 #include "pgenc/charset.h"
 #include "pgenc/buffer.h"
+#include "pgenc/stack.h"
 #include <sys/types.h>
 
 struct pgc_par;
@@ -15,6 +16,7 @@ typedef sel_err_t (*pgc_par_hook_t)(
 
 /** Function pointer for custom parser calls. */
 typedef sel_err_t (*pgc_par_call_t)(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *var);
@@ -29,7 +31,6 @@ enum pgc_par_tag {
         PGC_PAR_OR,                             /** Choice Parser */
         PGC_PAR_REP,                            /** Repetition Parser */
         PGC_PAR_HOOK,                           /** Hook Parser */
-        PGC_PAR_LNK,                            /** Link parser */
         PGC_PAR_CALL                            /** Custom Call */
 };
 
@@ -56,7 +57,6 @@ struct pgc_par
                         const pgc_par_call_t fun;
                         const struct pgc_par *const var;
                 } const call;
-                const struct pgc_par *const lnk;
                 const pgc_par_hook_t hook;
                 const struct pgc_cset *const set;
                 const int byte;
@@ -160,20 +160,9 @@ struct pgc_par
         .u.call.fun = FUN, \
         .u.call.var = VAR }
 
-/**
- * Initialize a link parser that simply runs the parser it points to.
- * @param lnk The parser the parser will link to.
- */
-#define PGC_PAR_LNK(LNK) { \
-        .tag = PGC_PAR_LNK, \
-        .u.lnk = LNK }
-
 /** 
- * Run a parser by taking a character buffer and a state.
- * @param parser The parser to run.
- * @param buffer The buffer to parse.
- * @param state The parser's user defined state.
- * @return A negative error code on failure, otherwise PGC_ERR_OK.
+ * Run a parser by taking a character buffer and a state.  Returns a negative 
+ * error code on failure, otherwise PGC_ERR_OK.
  */
 sel_err_t pgc_par_run(
         const struct pgc_par *parser, 
@@ -181,16 +170,34 @@ sel_err_t pgc_par_run(
         void *state);
 
 /**
- * Run the parser on the string.
- * @param parser The parser to run.
- * @param str The string to parse.
- * @param state The parse state.
- * @return A value 0 or more indicates how many characters were successfully
- * parsed.  A negative value corresponds to a PGC_ERR_X code.
+ * Run a parser by taking a buffer, a stack, and a state.  Returns a negative 
+ * error code on failure, otherwise PGC_ERR_OK.
+ */
+sel_err_t pgc_par_run_ex(
+        const struct pgc_par *parser, 
+        struct pgc_stk *stack,
+        struct pgc_buf *buffer,
+        void *state);
+
+/**
+ * Run the parser on the string.  A return value 0 or more indicates how many 
+ * characters were successfully parsed.  A negative value corresponds to an 
+ * error code.
  */
 ssize_t pgc_par_runs(
         const struct pgc_par *parser,
-        char *str,
+        const char *str,
+        void *state);
+
+/**
+ * Run the parser on the string with the given stack.  A return value 0 or 
+ * more indicates how many characters were successfully parsed.  A negative 
+ * value corresponds to an error code.
+ */
+ssize_t pgc_par_runs_ex(
+        const struct pgc_par *parser,
+        struct pgc_stk *stack,
+        const char *str,
         void *state);
 
 #endif

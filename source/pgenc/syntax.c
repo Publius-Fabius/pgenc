@@ -180,7 +180,7 @@ void pgc_syn_free(struct pgc_ast *ast)
                         pgc_syn_freelst(pgc_ast_tolst(ast));
                         free(ast);
                         return;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }  
 }
 
@@ -215,7 +215,7 @@ struct pgc_ast *pgc_syn_getfst(struct pgc_ast *syn)
                 case PGC_SYN_UNION: break;
                 case PGC_SYN_DIFF: break;
                 case PGC_SYN_UTF: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return pgc_syn_getfst_unsafe(syn);
 }
@@ -230,7 +230,7 @@ struct pgc_ast *pgc_syn_getsnd(struct pgc_ast *syn)
                 case PGC_SYN_UNION: break;
                 case PGC_SYN_DIFF: break;
                 case PGC_SYN_UTF: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return pgc_syn_getsnd_unsafe(syn);
 }
@@ -243,7 +243,7 @@ struct pgc_ast *pgc_syn_getname(struct pgc_ast *syn)
                 case PGC_SYN_DEC: break;
                 case PGC_SYN_LET: break;
                 case PGC_SYN_SET: break; 
-                default: SEL_ABORT();
+                default: SEL_HALT();
         } 
         return pgc_syn_getfst_unsafe(syn);
 }
@@ -255,7 +255,7 @@ struct pgc_ast *pgc_syn_getexpr(struct pgc_ast *syn)
                 case PGC_SYN_DEF: break;
                 case PGC_SYN_LET: break;
                 case PGC_SYN_SET: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         } 
         return pgc_syn_getsnd_unsafe(syn);
 }
@@ -265,7 +265,7 @@ struct pgc_ast *pgc_syn_getrange(struct pgc_ast *syn)
         SEL_ASSERT(syn);
         switch(syn->utag) {
                 case PGC_SYN_REP: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return pgc_syn_getfst_unsafe(syn);
 }
@@ -275,7 +275,7 @@ struct pgc_ast *pgc_syn_getsubex(struct pgc_ast *syn)
         SEL_ASSERT(syn);
         switch(syn->utag) {
                 case PGC_SYN_REP: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return pgc_syn_getsnd_unsafe(syn);
 }
@@ -285,7 +285,7 @@ struct pgc_ast *pgc_syn_getfun(struct pgc_ast *syn)
         SEL_ASSERT(syn);
         switch(syn->utag) {
                 case PGC_SYN_CALL: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return pgc_syn_getfst_unsafe(syn);
 }
@@ -295,7 +295,7 @@ struct pgc_ast *pgc_syn_getvar(struct pgc_ast *syn)
         SEL_ASSERT(syn);
         switch(syn->utag) {
                 case PGC_SYN_CALL: break;
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return pgc_syn_getsnd_unsafe(syn);
 }
@@ -303,7 +303,7 @@ struct pgc_ast *pgc_syn_getvar(struct pgc_ast *syn)
 struct pgc_ast *pgc_syn_findstmt(struct pgc_ast *syn, const char *name)
 {
         if(pgc_syn_typeof(syn) != PGC_SYN_SRC) {
-                SEL_ABORT();
+                SEL_HALT();
         }
         for(struct pgc_ast_lst *l = pgc_ast_tolst(syn); l; l = l->nxt)
         {
@@ -469,7 +469,7 @@ int pgc_syn_fprint(FILE *file, struct pgc_ast *syn)
                 case PGC_SYN_DEF: return pgc_syn_fprintdef(file, syn);
                 case PGC_SYN_DEC: return pgc_syn_fprintdec(file, syn);
                 case PGC_SYN_SRC: return pgc_syn_fprintsrc(file, syn);
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return -1;
 }

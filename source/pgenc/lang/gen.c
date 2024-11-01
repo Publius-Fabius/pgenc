@@ -140,7 +140,8 @@ static sel_err_t pgc_lang_gen_hooks(
                         /* call declaration */
                         fprintf(st->out, 
                                 "sel_err_t %s"
-                                "(struct pgc_buf*," 
+                                "(struct pgc_stk*,"
+                                "struct pgc_buf*," 
                                 "void*, " 
                                 "const struct pgc_par*); \r\n", 
                         pgc_tbl_key(i));
@@ -262,7 +263,7 @@ static sel_err_t pgc_lang_genid_fprint(
                         SEL_IO(fprintf(out, "&p%zx_p", var->u.num));
                         break;
                 default: 
-                        return SEL_ABORT();
+                        return SEL_HALT();
         }
         return PGC_ERR_OK;
 }
@@ -397,7 +398,7 @@ static sel_err_t pgc_lang_gen_exp(
                 case PGC_SYN_CALL: 
                         return pgc_lang_gen_call(syn, st, var, depth);
                 default: 
-                        return SEL_ABORT();
+                        return SEL_HALT();
         }
 }
 
@@ -506,7 +507,7 @@ static sel_err_t pgc_lang_gen_setexp(
                 case PGC_SYN_DIFF: 
                         return pgc_lang_gen_diff(syn, tbl, set);
                 default: 
-                        return SEL_ABORT();
+                        return SEL_HALT();
         }
 }
 
@@ -611,7 +612,7 @@ static sel_err_t pgc_lang_gen_stmt(
                 case PGC_SYN_DEF: return pgc_lang_gen_def(syn, st);
                 case PGC_SYN_LET: return pgc_lang_gen_let(syn, st);
                 case PGC_SYN_SET: return pgc_lang_gen_set(syn, st);
-                default: SEL_ABORT();
+                default: SEL_HALT();
         }
         return PGC_ERR_OK;
 }

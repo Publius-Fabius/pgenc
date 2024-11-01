@@ -149,7 +149,7 @@ static sel_err_t pgc_par_run_rep(
                         return PGC_ERR_OK;
                 }
         }
-        return SEL_ABORT();
+        return SEL_HALT();
 }
 
 static sel_err_t pgc_par_run_hook(
@@ -162,18 +162,11 @@ static sel_err_t pgc_par_run_hook(
 
 static sel_err_t pgc_par_run_call(
         const struct pgc_par *par,
+        struct pgc_stk *stk,
         struct pgc_buf *buf,
         void *state)
 {
-        return par->u.call.fun(buf, state, par->u.call.var);
-}
-
-static sel_err_t pgc_par_run_lnk(
-        const struct pgc_par *par,
-        struct pgc_buf *buf,
-        void *state)
-{
-        return pgc_par_run(par->u.lnk, buf, state);
+        return par->u.call.fun(stk, buf, state, par->u.call.var);
 }
 
 sel_err_t pgc_par_run(
@@ -200,17 +193,16 @@ sel_err_t pgc_par_run(
                 case PGC_PAR_HOOK: 
                         return pgc_par_run_hook(par, buf, state);
                 case PGC_PAR_CALL:
-                        return pgc_par_run_call(par, buf, state);
-                case PGC_PAR_LNK: 
-                        return pgc_par_run_lnk(par, buf, state);
+                /* ERROR!!! */
+                        return pgc_par_run_call(par, NULL, buf, state);
                 default: 
-                        return SEL_ABORT();
+                        return SEL_HALT();
         };
 }
 
 ssize_t pgc_par_runs(
         const struct pgc_par *par,
-        char *str,
+        const char *str,
         void *st)
 {
         const size_t len = strlen(str);

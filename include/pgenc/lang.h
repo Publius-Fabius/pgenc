@@ -112,6 +112,7 @@ enum pgc_lang_readop {
  * PGC_BLD_READPOLY will use the internal utag for the node's type.
  */
 sel_err_t pgc_lang_readexp(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *parser,
@@ -122,6 +123,7 @@ sel_err_t pgc_lang_readexp(
  * Parse a term.
  */
 sel_err_t pgc_lang_readterm(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg,
@@ -132,6 +134,7 @@ sel_err_t pgc_lang_readterm(
  * Capture an identifier.
  */
 sel_err_t pgc_lang_capid(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -140,6 +143,7 @@ sel_err_t pgc_lang_capid(
  * Capture a hex encoded byte.
  */
 sel_err_t pgc_lang_capxbyte(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -148,6 +152,7 @@ sel_err_t pgc_lang_capxbyte(
  * Capture a char literal.
  */
 sel_err_t pgc_lang_capchar(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -156,6 +161,7 @@ sel_err_t pgc_lang_capchar(
  * Capture a number literal.
  */
 sel_err_t pgc_lang_capnum(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -164,6 +170,7 @@ sel_err_t pgc_lang_capnum(
  * Capture a numeric range.
  */
 sel_err_t pgc_lang_caprange(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -174,6 +181,7 @@ sel_err_t pgc_lang_caprange(
  * constructed with pgc_lang_readutf8.
  */
 sel_err_t pgc_lang_caputf(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -182,6 +190,7 @@ sel_err_t pgc_lang_caputf(
  * Capture a UTF8 encoded pair.
  */
 sel_err_t pgc_lang_caputfrange(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -200,6 +209,7 @@ sel_err_t pgc_lang_setdiff(struct pgc_buf *buffer, void *state);
  * Capture set expression
  */
 sel_err_t pgc_lang_capsetexp(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer, 
         void *state, 
         const struct pgc_par *arg);
@@ -226,6 +236,7 @@ sel_err_t pgc_lang_setcall(struct pgc_buf *buffer, void *state);
 
 /** Capture repitition */
 sel_err_t pgc_lang_caprep(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -234,6 +245,7 @@ sel_err_t pgc_lang_caprep(
  * Capture hook.
  */
 sel_err_t pgc_lang_caphook(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
@@ -242,6 +254,7 @@ sel_err_t pgc_lang_caphook(
  * Capture an expression.
  */
 sel_err_t pgc_lang_capexp(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *parser);
@@ -275,6 +288,7 @@ sel_err_t pgc_lang_setlet(struct pgc_buf *buffer, void *state);
  * Capture a statement.
  */
 sel_err_t pgc_lang_capstmt(
+        struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *parser);

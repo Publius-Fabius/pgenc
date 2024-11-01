@@ -140,14 +140,14 @@ int main(int argc, char **argv)
                 pgc_stk_init(alloc, malloc(blen), blen);
                 e = pgc_parse_syntax(alloc, gram, &syntax);
                 if(e != PGC_ERR_OK) {
-                        free(alloc->bytes);
+                        free(alloc->base);
                         free(alloc);
                         fprintf(stderr, "error parsing syntax\n");
                         fclose(src_file);
                         exit(EXIT_FAILURE);
                 } else {
                         e = pgc_lang_gen(src_file, syntax, dict);
-                        free(alloc->bytes);
+                        free(alloc->base);
                         free(alloc);
                 }
         } else {

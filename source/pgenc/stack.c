@@ -1,44 +1,54 @@
 
 #include "pgenc/stack.h"
+#include "pgenc/error.h"
 #include <stdint.h>
+
+size_t pgc_stk_offset(struct pgc_stk *stk)
+{
+        return stk->offset;
+}
+
+size_t pgc_stk_length(struct pgc_stk *stk)
+{
+        return stk->length;
+}
 
 struct pgc_stk *pgc_stk_init(
         struct pgc_stk *stack, 
-        void *bytes,
+        void *base,
         const size_t length)
 {
-        stack->bytes = bytes;
-        stack->max = length;
-        stack->size = 0;
+        stack->base = base;
+        stack->length = length;
+        stack->offset = length;
         return stack;
-}
-
-size_t pgc_stk_size(struct pgc_stk *stk)
-{
-        return stk->size;
-}
-
-size_t pgc_stk_max(struct pgc_stk *stk)
-{
-        return stk->max;
 }
 
 void *pgc_stk_push(struct pgc_stk *stack, const size_t nbytes)
 {
-        const size_t offset = stack->size;
-        const size_t new_offset = offset + nbytes;
-        if(stack->max < new_offset) {
+        SEL_ASSERT(stack && stack->offset <= stack->length);
+        if(stack->offset < nbytes)
                 return NULL;
-        }
-        stack->size = new_offset;
-        return ((char*)stack->bytes) + offset;
+        stack->offset -= nbytes;
+        return ((char*)stack->base) + stack->offset;
 }
 
 void *pgc_stk_pop(struct pgc_stk *stack, const size_t nbytes)
 {
-        if(stack->size < nbytes) {
+        SEL_ASSERT(stack && stack->offset <= stack->length);
+        const size_t old_offset = stack->offset;
+        const size_t new_offset = old_offset + nbytes;
+        if(stack->length < new_offset) 
                 return NULL;
-        }
-        stack->size -= nbytes;
-        return ((char*)stack->bytes) + stack->size;
+        stack->offset = new_offset;
+        return ((char*)stack->base) + old_offset;
+}
+
+void *pgc_stk_peek(struct pgc_stk *stack, const size_t nbytes)
+{
+        SEL_ASSERT(stack && stack->offset <= stack->length);
+        const size_t index = stack->offset + nbytes;
+        if(stack->length <= index) 
+                return NULL;
+        return ((char*)stack->base) + index;
 }

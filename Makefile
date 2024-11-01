@@ -36,25 +36,6 @@ bin/test_buffer : tests/pgenc/buffer.c build/pgenc/buffer.o \
 grind_test_buffer : bin/test_buffer
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
 
-# parser.h
-build/pgenc/parser.o : source/pgenc/parser.c include/pgenc/parser.h includes
-	$(CC) $(CFLAGS) -c -o $@ $<
-bin/test_parser : tests/pgenc/parser.c build/pgenc/parser.o \
-	build/pgenc/error.o \
-	build/pgenc/charset.o \
-	build/pgenc/buffer.o \
-	lib/libselc.a
-	$(CC) $(CFLAGS) -o $@ $^ -lssl
-grind_test_parser : bin/test_parser
-	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
-
-lib/libpgenc_pristine.a : \
-	build/pgenc/error.o \
-	build/pgenc/charset.o \
-	build/pgenc/buffer.o \
-	build/pgenc/parser.o 
-	ar -crs $@ $^
-
 # stack.h
 build/pgenc/stack.o : source/pgenc/stack.c include/pgenc/stack.h includes
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -64,6 +45,29 @@ bin/test_stack : tests/pgenc/stack.c build/pgenc/stack.o \
 	$(CC) $(CFLAGS) -o $@ $^
 grind_test_stack : bin/test_stack
 	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
+
+# parser.h
+#build/pgenc/parser.o : source/pgenc/parser.c include/pgenc/parser.h includes
+#	$(CC) $(CFLAGS) -c -o $@ $<
+build/pgenc/parser_nr.o : source/pgenc/parser_nr.c include/pgenc/parser.h includes 
+	$(CC) $(CFLAGS) -c -o $@ $<
+bin/test_parser : tests/pgenc/parser.c build/pgenc/parser_nr.o \
+	build/pgenc/error.o \
+	build/pgenc/charset.o \
+	build/pgenc/buffer.o \
+	build/pgenc/stack.o \
+	lib/libselc.a
+	$(CC) $(CFLAGS) -o $@ $^ -lssl
+grind_test_parser : bin/test_parser
+	valgrind -q --error-exitcode=1 --leak-check=full $^ 1>/dev/null
+
+lib/libpgenc_pristine.a : \
+	build/pgenc/parser_nr.o \
+	build/pgenc/stack.o \
+	build/pgenc/buffer.o \
+	build/pgenc/charset.o \
+	build/pgenc/error.o 
+	ar -crs $@ $^
 
 # table.h
 build/pgenc/table.o : source/pgenc/table.c include/pgenc/table.h includes
@@ -109,7 +113,6 @@ bin/test_lang : tests/pgenc/lang.c \
 	build/pgenc/lang_parse.o \
 	build/pgenc/lang_gen.o \
 	build/pgenc/lang_proto.o \
-	build/pgenc/stack.o \
 	build/pgenc/ast.o \
 	build/pgenc/syntax.o \
 	build/pgenc/table.o \
@@ -123,7 +126,7 @@ lib/libpgenc.a : \
 	build/pgenc/error.o \
 	build/pgenc/charset.o \
 	build/pgenc/buffer.o \
-	build/pgenc/parser.o \
+	build/pgenc/parser_nr.o \
 	build/pgenc/ast.o \
 	build/pgenc/syntax.o \
 	build/pgenc/stack.o \

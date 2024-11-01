@@ -213,7 +213,7 @@ sel_err_t pgc_buf_matchutf8(
                         return PGC_ERR_ENC;
                 } 
         }
-        return SEL_ABORT();
+        return SEL_HALT();
 }
 
 sel_err_t pgc_buf_scan(
@@ -428,7 +428,7 @@ sel_err_t pgc_buf_getutf8(
                         return PGC_ERR_ENC;
                 } 
         }
-        return SEL_ABORT();
+        return SEL_HALT();
 }
 
 sel_err_t pgc_buf_encode(
@@ -455,7 +455,7 @@ sel_err_t pgc_buf_encode(
 
         if(!len) {
                 /* Something went wrong. */
-                SEL_ABORT();
+                SEL_HALT();
         }
 
         /* Reverse the encoded string's ordering. */
