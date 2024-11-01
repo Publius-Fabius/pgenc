@@ -32,7 +32,7 @@ struct pgc_stk *pgc_par_push(struct pgc_stk *stk, const struct pgc_par *par)
                                 return NULL;
                         af->step = 0;
                         if(!(ptr = pgc_stk_push(stk, sizeof(*ptr)))) {
-                                pgc_stk_pop(stk, sizeof(*af));
+                                SEL_TEST(pgc_stk_pop(stk, sizeof(*af)));
                                 return NULL;
                         }
                         *ptr = par;
@@ -43,7 +43,7 @@ struct pgc_stk *pgc_par_push(struct pgc_stk *stk, const struct pgc_par *par)
                                 return NULL;
                         cf->step = cf->offset = 0;
                         if(!(ptr = pgc_stk_push(stk, sizeof(*ptr)))) {
-                                pgc_stk_pop(stk, sizeof(*cf));
+                                SEL_TEST(pgc_stk_pop(stk, sizeof(*cf)));
                                 return NULL;
                         }
                         *ptr = par;
