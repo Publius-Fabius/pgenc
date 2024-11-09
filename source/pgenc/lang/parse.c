@@ -62,6 +62,21 @@ sel_err_t pgc_lang_parse(
         return PGC_ERR_OK;
 }
 
+sel_err_t pgc_lang_parse_ex(
+        const struct pgc_par *parser,
+        struct pgc_stk *stack,
+        struct pgc_buf *buffer,
+        struct pgc_stk *alloc,
+        struct pgc_ast_lst **list)
+{
+        struct pgc_lang_parst parst;
+        parst.alloc = alloc;
+        parst.list = parst.last = NULL;
+        SEL_TRY_QUIETLY(pgc_par_run_ex(parser, stack, buffer, &parst));
+        *list = parst.list;
+        return PGC_ERR_OK;
+}
+
 sel_err_t pgc_lang_readchar(
         struct pgc_buf *buf, 
         void *state,

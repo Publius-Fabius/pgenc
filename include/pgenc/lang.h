@@ -7,82 +7,52 @@
 #include "pgenc/parser.h"
 #include <stdio.h>
 
-/** 
- * Generate a syntax prototype for parsing PGENC grammars.
- * @return The syntax.
- */
+/** Generate a syntax prototype for parsing PGENC grammars. */
 struct pgc_ast *pgc_lang_proto();
 
-/**
- * Generate PGENC parsers in standard C.
- * @param out The output stream.
- * @param list A list of syntax nodes.
- * @param prefix The prefix to the generated parsers.
- * @return A possible error, or PGC_ERR_OK.
- */
+/** Generate PGENC parsers in standard C. */
 sel_err_t pgc_lang_gen(
         FILE *out,
         struct pgc_ast_lst *list,
         const char *prefix);
 
-/**
- * Parse the buffer's contents into a syntax tree. 
- * @param parser The parser to run.
- * @param buffer The buffer to parse.
- * @param alloc Memory allocator.
- * @param list Resulting list of syntax nodes.
- * @return A possible error.
- */
+/** Parse the buffer's contents into a syntax tree. */
 sel_err_t pgc_lang_parse(
         const struct pgc_par *parser,
         struct pgc_buf *buffer,
         struct pgc_stk *alloc,
         struct pgc_ast_lst **list);
 
-/**
- * Read a character literal.
- * @param buffer The buffer to read from
- * @param state Parsing state
- * @param parser The byte parser.
- * @param tag User defined tag.
- * @return Error code
- */
+/** Parse the buffer's contents into a syntax tree. */
+sel_err_t pgc_lang_parse_ex(
+        const struct pgc_par *parser,
+        struct pgc_stk *stack,
+        struct pgc_buf *buffer,
+        struct pgc_stk *alloc,
+        struct pgc_ast_lst **list);
+
+/** Read a character literal. */
 sel_err_t pgc_lang_readchar(
         struct pgc_buf *buf, 
         void *state,
         const size_t start,
         const int16_t tag);
 
-/**
- * Read UTF8 character.
- * @param buffer The buffer to read from
- * @param state Parsing state
- * @param parser UTF8 parser.
- * @param tag User defined tag.
- * @return Error code
- */
+/** Read UTF8 character. */
 sel_err_t pgc_lang_readutf8(
         struct pgc_buf *buffer, 
         void *state,
         const size_t start,
         const int16_t tag);
 
-/**
- * Read a string literal.
- * @param buffer The buffer to read from
- * @param state An (opaque) parsing state
- * @param tag A user defined tag.
- * @return A possible error.
- */
+/** Read a string literal. */
 sel_err_t pgc_lang_readstr(
         struct pgc_buf *buffer, 
         void *state,
         const size_t start,
         const int16_t tag);
 
-/**
- * Read an encoded number.
- */
+/** Read an encoded number. */
 sel_err_t pgc_lang_readenc(
         struct pgc_buf *buffer,
         void *state,
@@ -93,14 +63,10 @@ sel_err_t pgc_lang_readenc(
         pgc_buf_decode_dict_t dict,
         pgc_buf_decode_accum_t accum);
 
-/**
- * Set internal state's user tag.
- */
+/** Set internal state's user tag. */
 void pgc_lang_setutag(void *state, const int16_t tag);
 
-/** 
- * Options for parsing an expression.
- */
+/** Options for parsing an expression. */
 enum pgc_lang_readop {
         PGC_BLD_MERGE       = 1,            /* Merge singletons */
         PGC_BLD_POLY        = 2             /* Poly type */
@@ -119,9 +85,7 @@ sel_err_t pgc_lang_readexp(
         const int16_t utag,
         enum pgc_lang_readop ops);
 
-/**
- * Parse a term.
- */
+/** Parse a term. */
 sel_err_t pgc_lang_readterm(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
@@ -130,45 +94,35 @@ sel_err_t pgc_lang_readterm(
         const int16_t utag,
         sel_err_t (*reader)(struct pgc_buf*, void*, const size_t, int16_t));
 
-/**
- * Capture an identifier.
- */
+/** Capture an identifier. */
 sel_err_t pgc_lang_capid(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
 
-/**
- * Capture a hex encoded byte.
- */
+/** Capture a hex encoded byte. */
 sel_err_t pgc_lang_capxbyte(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
 
-/**
- * Capture a char literal.
- */
+/** Capture a char literal. */
 sel_err_t pgc_lang_capchar(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
 
-/** 
- * Capture a number literal.
- */
+/** Capture a number literal. */
 sel_err_t pgc_lang_capnum(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
 
-/**
- * Capture a numeric range.
- */
+/** Capture a numeric range. */
 sel_err_t pgc_lang_caprange(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
@@ -186,52 +140,36 @@ sel_err_t pgc_lang_caputf(
         void *state,
         const struct pgc_par *arg);
 
-/**
- * Capture a UTF8 encoded pair.
- */
+/** Capture a UTF8 encoded pair. */
 sel_err_t pgc_lang_caputfrange(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
 
-/**
- * Set internal utag to PGC_SYN_UNION.
- */
+/** Set internal utag to PGC_SYN_UNION. */
 sel_err_t pgc_lang_setunion(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_DIFF.
- */
+/** Set internal utag to PGC_SYN_DIFF. */
 sel_err_t pgc_lang_setdiff(struct pgc_buf *buffer, void *state);
 
-/**
- * Capture set expression
- */
+/** Capture set expression */
 sel_err_t pgc_lang_capsetexp(
         struct pgc_stk *stack,
         struct pgc_buf *buffer, 
         void *state, 
         const struct pgc_par *arg);
 
-/**
- * Set internal utag to PGC_SYN_REP.
- */
+/** Set internal utag to PGC_SYN_REP. */
 sel_err_t pgc_lang_setrep(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_AND.
- */
+/** Set internal utag to PGC_SYN_AND. */
 sel_err_t pgc_lang_setand(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_OR.
- */
+/** Set internal utag to PGC_SYN_OR. */
 sel_err_t pgc_lang_setor(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_CALL.
- */
+/** Set internal utag to PGC_SYN_CALL. */
 sel_err_t pgc_lang_setcall(struct pgc_buf *buffer, void *state);
 
 /** Capture repitition */
@@ -241,52 +179,36 @@ sel_err_t pgc_lang_caprep(
         void *state,
         const struct pgc_par *arg);
         
-/**
- * Capture hook.
- */
+/** Capture hook. */
 sel_err_t pgc_lang_caphook(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *arg);
 
-/**
- * Capture an expression.
- */
+/** Capture an expression. */
 sel_err_t pgc_lang_capexp(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
         void *state,
         const struct pgc_par *parser);
 
-/**
- * Set internal utag to PGC_SYN_DEC.
- */
+/** Set internal utag to PGC_SYN_DEC. */
 sel_err_t pgc_lang_setdec(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_EXT.
- */
+/** Set internal utag to PGC_SYN_EXT. */
 sel_err_t pgc_lang_setext(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_DEC.
- */
+/** Set internal utag to PGC_SYN_DEC. */
 sel_err_t pgc_lang_setdef(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_SET.
- */
+/** Set internal utag to PGC_SYN_SET. */
 sel_err_t pgc_lang_setset(struct pgc_buf *buffer, void *state);
 
-/**
- * Set internal utag to PGC_SYN_LET.
- */
+/** Set internal utag to PGC_SYN_LET. */
 sel_err_t pgc_lang_setlet(struct pgc_buf *buffer, void *state);
 
-/**
- * Capture a statement.
- */
+/** Capture a statement. */
 sel_err_t pgc_lang_capstmt(
         struct pgc_stk *stack,
         struct pgc_buf *buffer,
