@@ -33,7 +33,7 @@ Use the parsers in your code like so:
 ```
     #include "pgenc/parser.h"
 
-    /* Forward definitions, be sure to include 'const'. */
+    /* Forward declarations, be sure to include 'const'. */
     extern const struct pgc_par my_parsers_dog;
     extern const struct pgc_par my_parsers_cat;
     extern const struct pgc_par my_parsers_animal;
