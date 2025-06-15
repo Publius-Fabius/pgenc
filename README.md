@@ -1,10 +1,10 @@
 # pgenc - Parser Generator for C
 
-This project provides a robust option for generating highly optimized static 
-parsers in standard C99.  Parsers are defined as a grammar in a language 
-inspired by EBNF, but with several powerful extensions, including UTF8!  PGENC 
-is fully self parsing and comes with its own definition defined in its own 
-language (see grammar/self.g).
+This project provides a robust option for generating efficient parsers in 
+standard C99.  Parsers are defined as a grammar in a language inspired by 
+EBNF, but with several powerful extensions, including UTF8!  PGENC is fully 
+self parsing and comes with its own definition defined in its own language 
+(see grammar/self.g).
 
 PGENC relies on no OS specific code, so it should be perfectly portable to any
 architecture/system with a C99 compliant compiler.  
@@ -37,6 +37,12 @@ Use the parsers in your code like so:
     extern const struct pgc_par my_parsers_dog;
     extern const struct pgc_par my_parsers_cat;
     extern const struct pgc_par my_parsers_animal;
+
+    int example_function() {
+        if(pgc_par_runs(&my_parsers_dog, "dog!!!", NULL) != 3) {
+            return -1;
+        }
+    }
 ```
 
 Compile and link in the standard manner:
