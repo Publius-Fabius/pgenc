@@ -312,7 +312,7 @@ sel_err_t pgc_par_run(
         return pgc_par_run_ex(par, &stk, buf, state);
 }
 
-ssize_t pgc_par_runs(
+intptr_t pgc_par_runs(
         const struct pgc_par *par,
         const char *str,
         void *state)
@@ -322,7 +322,7 @@ ssize_t pgc_par_runs(
         return pgc_par_runs_ex(par, &stk, str, state);
 }
 
-ssize_t pgc_par_runs_ex(
+intptr_t pgc_par_runs_ex(
         const struct pgc_par *par,
         struct pgc_stk *stk,
         const char *str,
@@ -333,7 +333,7 @@ ssize_t pgc_par_runs_ex(
         buf.end = len;
         sel_err_t e = pgc_par_run_ex(par, stk, &buf, state);
         if(e == PGC_ERR_OK) {
-                return (ssize_t)pgc_buf_tell(&buf);
+                return (intptr_t)pgc_buf_tell(&buf);
         } else {
                 return e;
         }

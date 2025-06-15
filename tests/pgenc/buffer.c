@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
 
 uint8_t bytes[256];
@@ -165,56 +163,6 @@ void test_scan()
         err = pgc_buf_scan(&lens, "cde", 3);
         SEL_TEST(err == PGC_ERR_OK);
         SEL_TEST(pgc_buf_tell(&lens) == 5);
-}
-
-void test_read()
-{
-        SEL_INFO();
-
-        int pfds[2];
-        pipe(pfds);
-        fcntl(pfds[0], F_SETFL, O_NONBLOCK); 
-        fcntl(pfds[1], F_SETFL, O_NONBLOCK); 
-        struct pgc_buf b; pgc_buf_init(&b, bytes, 8, 0);
-
-        write(pfds[1], "abcd", 4);
-        SEL_TEST(pgc_buf_read(&b, pfds[0], 4) == PGC_ERR_OK);
-        SEL_TEST(pgc_buf_tell(&b) == 0);
-        SEL_TEST(pgc_buf_end(&b) == 4);
-        SEL_TEST(pgc_buf_cmp(&b, "abcd", 4) == PGC_ERR_OK);
-        write(pfds[1], "12345", 5);
-        SEL_TEST(pgc_buf_read(&b, pfds[0], 9) == PGC_ERR_OOB);
-        SEL_TEST(pgc_buf_read(&b, pfds[0], 5) == PGC_ERR_OK);
-        SEL_TEST(pgc_buf_cmp(&b, "12345", 5) == PGC_ERR_OK);
-        SEL_TEST(pgc_buf_read(&b, pfds[0], 1) == PGC_ERR_SYS);
-        SEL_TEST(errno == EAGAIN);
-
-        close(pfds[0]);
-        close(pfds[1]);
-}
-
-void test_write()
-{
-        SEL_INFO();
-
-        int pfds[2];
-        pipe(pfds);
-        fcntl(pfds[0], F_SETFL, O_NONBLOCK); 
-        fcntl(pfds[1], F_SETFL, O_NONBLOCK); 
-        struct pgc_buf b; pgc_buf_init(&b, bytes, 8, 0);
-        char str[64];
-
-        SEL_TEST(pgc_buf_put(&b, "xyz", 3) == PGC_ERR_OK);
-        SEL_TEST(pgc_buf_tell(&b) == 0);
-        SEL_TEST(pgc_buf_end(&b) == 3);
-        SEL_TEST(pgc_buf_write(&b, pfds[1], 3) == PGC_ERR_OK);
-        SEL_TEST(pgc_buf_tell(&b) == 3);
-        read(pfds[0], str, 3);
-        SEL_TEST(memcmp(str, "xyz", 3) == 0);
-        SEL_TEST(pgc_buf_write(&b, pfds[1], 1) == PGC_ERR_OOB);
-
-        close(pfds[0]);
-        close(pfds[1]);
 }
 
 void test_printf()
@@ -429,8 +377,6 @@ int main(int argc, char **args)
         test_match();
         test_match_utf8();
         test_scan();
-        test_read();
-        test_write();
         test_printf();
         test_getchar();
         test_getutf8();

@@ -5,28 +5,8 @@
 #include "pgenc/self.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <errno.h>
-
-static void pgc_print_help()
-{
-        puts("USAGE: pgenc [OPTIONS]");
-        puts(
-                "  Auto-generate parsers into a source file. The source \n"
-                "  provides an export function for creating an instance of \n"
-                "  a parser dictionary defined as a standard C struct. \n"
-                "  Additionally, accessor functions are generated to link \n"
-                "  against. Calling pgenc without specifying a grammar file \n"
-                "  will auto-generate parsers for the pgenc grammar itself. \n"
-        );
-        puts("OPTIONS:");
-        puts("    -?                    Print help");
-        puts("    -g                    Grammar input file");
-        puts("    -s                    Source output file");
-        puts("    -d                    Dictionary (struct) name\n");
-        puts("END");
-}
 
 static sel_err_t pgc_parse_syntax(
         struct pgc_stk *alloc,
@@ -89,7 +69,7 @@ static sel_err_t pgc_parse_syntax(
         return PGC_ERR_OK;
 }
 
-int main(int argc, char **argv)
+int main(int argc, char **args)
 {
         pgc_err_init();
 
@@ -99,29 +79,13 @@ int main(int argc, char **argv)
 
         size_t blen = 0xFFFFF;
 
-        int opt = 0;
-
-        while((opt = getopt(argc, argv, "g:s:d:?")) != -1) {
-                switch (opt) {
-                        case 's':
-                                src = optarg;
-                                break;
-                        case 'd':
-                                dict = optarg;
-                                break;
-                        case 'g':
-                                gram = optarg;
-                                break;
-                        case 'b':
-                                blen = (size_t)atoll(optarg);
-                                break;
-                        case '?': 
-                                pgc_print_help();
-                                exit(EXIT_SUCCESS);
-                        default:
-                                fprintf(stderr, "bad option:%c\n", opt);
-                                exit(EXIT_FAILURE);
-                }
+        if(argc < 2) {
+                puts("USAGE: <OUTPUT_FILE> <NAMESPACE> <INPUT_FILE>");
+                return EXIT_SUCCESS;
+        } else if(argc > 2) {
+                src = args[1];
+                dict = args[2];
+                gram = args[3];
         }
 
         FILE *src_file = fopen(src, "w");
@@ -129,7 +93,7 @@ int main(int argc, char **argv)
         if(!src_file) {
                 fputs("unable to open source file for writing\n", stderr);
                 fprintf(stderr, "errno=%s\n", strerror(errno));
-                exit(EXIT_FAILURE);
+                return EXIT_FAILURE;
         }
 
         sel_err_t e = 0;
@@ -144,7 +108,7 @@ int main(int argc, char **argv)
                         free(alloc);
                         fprintf(stderr, "error parsing syntax\n");
                         fclose(src_file);
-                        exit(EXIT_FAILURE);
+                        return EXIT_FAILURE;
                 } else {
                         e = pgc_lang_gen(src_file, syntax, dict);
                         free(alloc->base);

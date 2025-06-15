@@ -1,7 +1,6 @@
 #include "pgenc/buffer.h"
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <ctype.h>
@@ -237,43 +236,22 @@ sel_err_t pgc_buf_scan(
         }
 }
 
-sel_err_t pgc_buf_read(struct pgc_buf *b, int fd, const size_t nb)
+intptr_t pgc_buf_cbread(
+        struct pgc_buf *b,
+        const size_t nb,
+        intptr_t (*callback)(void *addr, const size_t nb, void *state),
+        void *state)
 {
         const size_t new_end = b->end + nb;
         /* NOTE: PGC_BUF_ENSURE can modify b->begin */
         PGC_BUF_ENSURE(b, new_end);
         uint8_t *addr = ((uint8_t*)b->addr) + (b->end - b->begin);
-        const ssize_t result = read(fd, addr, nb);
+        const intptr_t result = callback(addr, nb, state);
         if(result < 0) {
-                return PGC_ERR_SYS;
-        } else if(result < 1) {
-                return PGC_ERR_EOF;
-        } else {
-                b->end += (size_t)result;
-                return PGC_ERR_OK;
+                return result;
         }
-}
-
-sel_err_t pgc_buf_sread(
-        struct pgc_buf *b, 
-        SSL *ssl, 
-        const size_t nbytes, 
-        int *ssl_error)
-{
-        const size_t new_end = b->end + nbytes;
-        /* NOTE: PGC_BUF_ENSURE can modify b->begin */
-        PGC_BUF_ENSURE(b, new_end);
-        uint8_t *addr = ((uint8_t*)b->addr) + (b->end - b->begin);
-        const int result = SSL_read(ssl, addr, (int)nbytes);
-        if(result < 0) {
-                *ssl_error = result;
-                return PGC_ERR_SSL;
-        } else if(result < 1) {
-                return PGC_ERR_EOF;
-        } else {
-                b->end += (size_t)result;
-                return PGC_ERR_OK;
-        }        
+        b->end += (size_t)result;
+        return PGC_ERR_OK;
 }
 
 sel_err_t pgc_buf_fread(
@@ -296,44 +274,23 @@ sel_err_t pgc_buf_fread(
         }
 }
 
-sel_err_t pgc_buf_write(
-        struct pgc_buf *b, 
-        int fd, 
-        const size_t nb)
+intptr_t pgd_buf_cbwrite( 
+        struct pgc_buf *b,
+        const size_t nb,
+        intptr_t (*callback)(void *addr, const size_t nb, void *state),
+        void *state)
 {
         const size_t new_offset = b->offset + nb;
         uint8_t *addr = ((uint8_t*)b->addr) + (b->offset - b->begin);
         if(b->end < new_offset) {
                 return PGC_ERR_OOB;
         } 
-        const ssize_t result = write(fd, addr, nb);
+        const intptr_t result = callback(addr, nb, state);
         if(result < 0) {
-                return PGC_ERR_SYS;
-        } else {
-                b->offset += (size_t)result;
-                return PGC_ERR_OK;
+                return result;
         }
-}
-
-sel_err_t pgc_buf_swrite(
-        struct pgc_buf *b, 
-        SSL *ssl, 
-        const size_t nbytes,
-        int *ssl_error)
-{
-        const size_t new_offset = b->offset + nbytes;
-        uint8_t *addr = ((uint8_t*)b->addr) + (b->offset - b->begin);
-        if(b->end < new_offset) {
-                return PGC_ERR_OOB;
-        } 
-        const int result = SSL_write(ssl, addr, (int)nbytes);
-        if(result < 0) {
-                *ssl_error = result;
-                return PGC_ERR_SSL;
-        } else {
-                b->offset += (size_t)result;
-                return PGC_ERR_OK;
-        }
+        b->offset += (size_t)result;
+        return PGC_ERR_OK;
 }
 
 sel_err_t pgc_buf_fwrite(

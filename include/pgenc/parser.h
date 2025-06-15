@@ -5,7 +5,6 @@
 #include "pgenc/charset.h"
 #include "pgenc/buffer.h"
 #include "pgenc/stack.h"
-#include <sys/types.h>
 
 struct pgc_par;
 
@@ -184,7 +183,7 @@ sel_err_t pgc_par_run_ex(
  * characters were successfully parsed.  A negative value corresponds to an 
  * error code.
  */
-ssize_t pgc_par_runs(
+intptr_t pgc_par_runs(
         const struct pgc_par *parser,
         const char *str,
         void *state);
@@ -194,7 +193,7 @@ ssize_t pgc_par_runs(
  * more indicates how many characters were successfully parsed.  A negative 
  * value corresponds to an error code.
  */
-ssize_t pgc_par_runs_ex(
+intptr_t pgc_par_runs_ex(
         const struct pgc_par *parser,
         struct pgc_stk *stack,
         const char *str,
